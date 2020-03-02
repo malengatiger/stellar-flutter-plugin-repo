@@ -92,20 +92,12 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
 
     private void createAccount() {
         Log.d(TAG, "\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08 createAccount ...");
-        /*
-         // before
-        // bitcoinWallet.setOnStartupListener(() -> eventSink.success(true));
-
-        // after
-        bitcoinWallet.setOnStartupListener(() -> uiThreadHandler.post(() -> eventSink.success(true)));
-        break;
-         */
         try {
-            operations.createAccount(isDevelopment, new CreateAccountListener() {
+            operations.createAccount(isDevelopment, result, new CreateAccountListener() {
                 @Override
                 public void onAccountCreated(final AccountResponse accountResponse) {
                     LOGGER.info("\uD83E\uDDA0 Create account has worked,Boss! " + accountResponse.getAccountId());
-                    returnAccountResponse(accountResponse);
+                    //returnAccountResponse(accountResponse);
                 }
 
                 @Override
@@ -122,14 +114,7 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
         }
     }
 
-    private void returnAccountResponse(final AccountResponse accountResponse) {
-        uiThreadHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                result.success(G.toJson(accountResponse));
-            }
-        });
-    }
+
     private void returnError(final String code, final String message,final String reason ) {
         uiThreadHandler.post(new Runnable() {
             @Override

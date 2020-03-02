@@ -1,6 +1,8 @@
 package com.boha.stellarplugin;
 
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import com.boha.stellarplugin.listeners.CreateAccountListener;
@@ -36,6 +38,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
+import io.flutter.plugin.common.MethodChannel;
 import shadow.com.google.common.base.Optional;
 
 class StellarOperations {
@@ -48,12 +51,12 @@ class StellarOperations {
 
     private static boolean isDevelopment;
 
-    void createAccount(boolean isDevelopmentStatus, CreateAccountListener createAccountListener) {
+    void createAccount(boolean isDevelopmentStatus, MethodChannel.Result result, CreateAccountListener createAccountListener) {
         LOGGER.info("\uD83E\uDD6C \uD83E\uDD6C \uD83E\uDD6C \uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08 " +
                 ".... Creating new Stellar account ..... " +
                 "\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08 ");
         isDevelopment = isDevelopmentStatus;
-        new StellarTask(createAccountListener).execute();
+        new StellarTask(createAccountListener, result).execute();
 
     }
 
@@ -104,6 +107,7 @@ class StellarOperations {
         AccountResponse accountResponse;
         List<PaymentOperationResponse> paymentOperationResponses;
         SubmitTransactionResponse submitTransactionResponse;
+        MethodChannel.Result methodResult;
 
         private void setServer(boolean isDevelopment) {
             Log.d(TAG, "............ setServer starting ...... " +
@@ -147,9 +151,10 @@ class StellarOperations {
 
         }
 
-        StellarTask(CreateAccountListener createAccountListener) {
+        StellarTask(CreateAccountListener createAccountListener, MethodChannel.Result methodResult) {
             this.createAccountListener = createAccountListener;
             requestType = CREATE_ACCOUNT;
+            this.methodResult = methodResult;
         }
 
         @Override
@@ -456,7 +461,7 @@ class StellarOperations {
             } else {
                 switch (requestType) {
                     case CREATE_ACCOUNT:
-                        createAccountListener.onAccountCreated(accountResponse);
+                        returnAccountResponse(accountResponse,methodResult);
                         break;
                     case SEND_PAYMENT:
                         sendPaymentListener.onPaymentSent(submitTransactionResponse);
@@ -474,7 +479,14 @@ class StellarOperations {
             }
         }
     }
-
-
+    static private Handler uiThreadHandler = new Handler(Looper.getMainLooper());
+   static private void returnAccountResponse(final AccountResponse accountResponse, final MethodChannel.Result result) {
+        uiThreadHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                result.success(G.toJson(accountResponse));
+            }
+        });
+    }
     private static final String TAG = StellarOperations.class.getSimpleName();
 }

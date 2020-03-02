@@ -49,7 +49,8 @@ class _MyAppState extends State<MyApp> {
     try {
       var acct = await Stellarplugin.createAccount(true);
       print(
-          '_MyAppState: _createAccounts: 🥬 🥬 🥬 🥬  Account created: $acct  🍎  🍎 ');
+          '_MyAppState:  🥬 🥬 🥬 🥬  _createAccounts: 🥬 🥬 🥬 🥬  Account created: '
+          '$acct  🍎  🍎 ');
       setState(() {
         widgets.add(Text(
           "Account has been created $acct",
