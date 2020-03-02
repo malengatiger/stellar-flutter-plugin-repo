@@ -53,7 +53,7 @@ class _MyAppState extends State<MyApp> {
           '$acct  🍎  🍎 ');
       setState(() {
         widgets.add(Text(
-          "Account has been created $acct",
+          "🍎🍎🍎🍎 Account has been created $acct 🍎",
           style:
               TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo[400]),
         ));
@@ -122,6 +122,7 @@ class _MyAppState extends State<MyApp> {
         key: _key,
         appBar: AppBar(
           title: const Text('Stellar Flutter Plugin'),
+          backgroundColor: Colors.pink[300],
           bottom: PreferredSize(
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
@@ -132,7 +133,7 @@ class _MyAppState extends State<MyApp> {
                       style: TextStyle(color: Colors.white),
                     ),
                     SizedBox(
-                      height: 4,
+                      height: 20,
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -142,7 +143,7 @@ class _MyAppState extends State<MyApp> {
                           width: 12,
                         ),
                         Text(
-                          '3',
+                          '6',
                           style: TextStyle(
                               fontSize: 30,
                               color: Colors.white,
@@ -161,7 +162,7 @@ class _MyAppState extends State<MyApp> {
         backgroundColor: Colors.brown[100],
         body: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.all(8.0),
             child: Column(
               children: <Widget>[
                 SizedBox(
