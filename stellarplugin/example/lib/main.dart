@@ -85,7 +85,7 @@ class _MyAppState extends State<MyApp> {
       return;
     }
     var seed = accountResponses.elementAt(0).secretSeed;
-    var amount = "20";
+    var amount = "455";
     var memo = "Tx from Flutter";
     var destinationAccount =
         accountResponses.elementAt(1).accountResponse.accountId;
@@ -108,22 +108,42 @@ class _MyAppState extends State<MyApp> {
   }
 
   _getPaymentsReceived() async {
+    if (accountResponses.length < 2) {
+      print(
+          '🔆 🔆 🔆 🔆 Please create at least 2 accounts for this (_getPaymentsReceived tranx) to work');
+      return;
+    }
     try {
-//      var acct = await Stellar.createAccount;
-//      print(
-//          '_MyAppState: _createAccounts: 🥬 🥬 🥬 🥬  Account created: $acct  🍎  🍎 ');
-    } on PlatformException {
-      print('We have a Plugin problem');
+      var paymentsReceived = await Stellar.getPaymentsReceived(
+          accountId: accountResponses.elementAt(1).accountResponse.accountId);
+      print(
+          '_MyAppState: _getPaymentsReceived: 🥬 🥬 🥬 🥬 👺  Payments received, account #2: $paymentsReceived  🍎 🍎 ');
+      var paymentsReceived1 = await Stellar.getPaymentsReceived(
+          accountId: accountResponses.elementAt(0).accountResponse.accountId);
+      print(
+          '_MyAppState: _getPaymentsReceived: 🥬 🥬 🥬 🥬 👺   Payments received, account #1: $paymentsReceived1  🍎 🍎 ');
+    } on PlatformException catch (e) {
+      print('We have a Plugin problem: $e');
     }
   }
 
   _getPaymentsMade() async {
+    if (accountResponses.length < 2) {
+      print(
+          '🔆 🔆 🔆 🔆 Please create at least 2 accounts for this (_getPaymentsMade tranx) to work');
+      return;
+    }
     try {
-//      var acct = await Stellar.createAccount;
-//      print(
-//          '_MyAppState: _createAccounts: 🥬 🥬 🥬 🥬  Account created: $acct  🍎  🍎 ');
-    } on PlatformException {
-      print('We have a Plugin problem');
+      var paymentsMade = await Stellar.getPaymentsMade(
+          accountId: accountResponses.first.accountResponse.accountId);
+      print(
+          '\n_MyAppState: _getPaymentsMade: 💙💙 💙💙 💙💙 💙💙   Payments made (account #1): $paymentsMade  🍎  🍎 💙💙 💙💙 💙💙 ');
+      var paymentsMade1 = await Stellar.getPaymentsMade(
+          accountId: accountResponses.elementAt(1).accountResponse.accountId);
+      print(
+          '_MyAppState: _getPaymentsMade: 💙💙 💙💙 💙💙 💙💙    Payments made (account #2): $paymentsMade1  🍎  🍎 💙💙 💙💙 💙💙 ');
+    } on PlatformException catch (e) {
+      print('We have a Plugin problem: $e');
     }
   }
 
@@ -136,7 +156,6 @@ class _MyAppState extends State<MyApp> {
     try {
       var acct = await Stellar.getAccount(
           seed: accountResponses.elementAt(0).secretSeed);
-
       var mJson = jsonDecode(acct);
       var response = AccountResponse.fromJson(mJson);
       print(
@@ -282,24 +301,6 @@ class _MyAppState extends State<MyApp> {
                   child: RaisedButton(
                     elevation: 4,
                     color: Colors.indigo[700],
-                    onPressed: _sendPayment,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        'Get Payments Received',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: 16,
-                ),
-                Container(
-                  width: 400,
-                  child: RaisedButton(
-                    elevation: 4,
-                    color: Colors.blueGrey[700],
                     onPressed: _getPaymentsReceived,
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),

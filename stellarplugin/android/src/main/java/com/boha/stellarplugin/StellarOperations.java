@@ -311,10 +311,6 @@ class StellarOperations {
 
             final KeyPair account = KeyPair.fromAccountId(accountId);
             PaymentsRequestBuilder paymentsRequest = server.payments().forAccount(account.getAccountId());
-//            String lastToken = loadLastPagingToken("");
-//            if (lastToken != null) {
-//                paymentsRequest.cursor(lastToken);
-//            }
             final List<PaymentOperationResponse> paymentOperationResponses = new ArrayList<>();
 
             try {
@@ -326,31 +322,33 @@ class StellarOperations {
                         // want to process received payments here.
                         if (payment instanceof PaymentOperationResponse) {
                             if (((PaymentOperationResponse) payment).getTo().equals(account.getAccountId())) {
-                                return;
-                            }
-                            PaymentOperationResponse paymentOperationResponse = (PaymentOperationResponse) payment;
-                            paymentOperationResponses.add(paymentOperationResponse);
-                            String amount = ((PaymentOperationResponse) payment).getAmount();
-                            Asset asset = ((PaymentOperationResponse) payment).getAsset();
-                            String assetName;
-                            if (asset.equals(new AssetTypeNative())) {
-                                assetName = LUMENS;
-                            } else {
-                                StringBuffer assetNameBuilder = new StringBuffer();
-                                assetNameBuilder.append(((AssetTypeCreditAlphaNum) asset).getCode());
-                                assetNameBuilder.append(":");
-                                assetNameBuilder.append(((AssetTypeCreditAlphaNum) asset).getIssuer());
-                                assetName = assetNameBuilder.toString();
-                                LOGGER.info("assetName: " + assetName);
+                                PaymentOperationResponse paymentOperationResponse = (PaymentOperationResponse) payment;
+                                paymentOperationResponses.add(paymentOperationResponse);
+                                String amount = ((PaymentOperationResponse) payment).getAmount();
+                                Asset asset = ((PaymentOperationResponse) payment).getAsset();
+                                String assetName;
+                                if (asset.equals(new AssetTypeNative())) {
+                                    assetName = LUMENS;
+                                } else {
+                                    StringBuffer assetNameBuilder = new StringBuffer();
+                                    assetNameBuilder.append(((AssetTypeCreditAlphaNum) asset).getCode());
+                                    assetNameBuilder.append(":");
+                                    assetNameBuilder.append(((AssetTypeCreditAlphaNum) asset).getIssuer());
+                                    assetName = assetNameBuilder.toString();
+                                    LOGGER.info("assetName: " + assetName);
+                                }
+
+                                StringBuffer builder = new StringBuffer();
+                                builder.append(amount);
+                                builder.append(" ");
+                                builder.append(assetName);
+                                builder.append(" from ");
+                                builder.append(((PaymentOperationResponse) payment).getFrom());
+                                LOGGER.info(builder.toString());
                             }
 
-                            StringBuffer builder = new StringBuffer();
-                            builder.append(amount);
-                            builder.append(" ");
-                            builder.append(assetName);
-                            builder.append(" from ");
-                            builder.append(((PaymentOperationResponse) payment).getFrom());
-                            LOGGER.info(builder.toString());
+                        } else {
+                            LOGGER.info("This is NOT my payment RECEIVED, ignored");
                         }
 
                     }
@@ -381,7 +379,6 @@ class StellarOperations {
 //                paymentsRequest.cursor(lastToken);
 //            }
             final List<PaymentOperationResponse> paymentOperationResponses = new ArrayList<>();
-
             try {
                 paymentsRequest.stream(new EventListener<OperationResponse>() {
                     @Override
@@ -390,32 +387,34 @@ class StellarOperations {
                         // The payments stream includes both sent and received payments. We only
                         // want to process received payments here.
                         if (payment instanceof PaymentOperationResponse) {
-                            if (!((PaymentOperationResponse) payment).getTo().equals(account.getAccountId())) {
-                                return;
-                            }
-                            PaymentOperationResponse paymentOperationResponse = (PaymentOperationResponse) payment;
-                            paymentOperationResponses.add(paymentOperationResponse);
-                            String amount = ((PaymentOperationResponse) payment).getAmount();
-                            Asset asset = ((PaymentOperationResponse) payment).getAsset();
-                            String assetName;
-                            if (asset.equals(new AssetTypeNative())) {
-                                assetName = LUMENS;
-                            } else {
-                                StringBuffer assetNameBuilder = new StringBuffer();
-                                assetNameBuilder.append(((AssetTypeCreditAlphaNum) asset).getCode());
-                                assetNameBuilder.append(":");
-                                assetNameBuilder.append(((AssetTypeCreditAlphaNum) asset).getIssuer());
-                                assetName = assetNameBuilder.toString();
-                                LOGGER.info("assetName: " + assetName);
+                            if (((PaymentOperationResponse) payment).getFrom().equals(account.getAccountId())) {
+                                PaymentOperationResponse paymentOperationResponse = (PaymentOperationResponse) payment;
+                                paymentOperationResponses.add(paymentOperationResponse);
+                                String amount = ((PaymentOperationResponse) payment).getAmount();
+                                Asset asset = ((PaymentOperationResponse) payment).getAsset();
+                                String assetName;
+                                if (asset.equals(new AssetTypeNative())) {
+                                    assetName = LUMENS;
+                                } else {
+                                    StringBuffer assetNameBuilder = new StringBuffer();
+                                    assetNameBuilder.append(((AssetTypeCreditAlphaNum) asset).getCode());
+                                    assetNameBuilder.append(":");
+                                    assetNameBuilder.append(((AssetTypeCreditAlphaNum) asset).getIssuer());
+                                    assetName = assetNameBuilder.toString();
+                                    LOGGER.info("assetName: " + assetName);
+                                }
+
+                                StringBuffer builder = new StringBuffer();
+                                builder.append(amount);
+                                builder.append(" ");
+                                builder.append(assetName);
+                                builder.append(" from ");
+                                builder.append(((PaymentOperationResponse) payment).getFrom());
+                                LOGGER.info(builder.toString());
                             }
 
-                            StringBuffer builder = new StringBuffer();
-                            builder.append(amount);
-                            builder.append(" ");
-                            builder.append(assetName);
-                            builder.append(" from ");
-                            builder.append(((PaymentOperationResponse) payment).getFrom());
-                            LOGGER.info(builder.toString());
+                        } else {
+                            LOGGER.info("This is NOT my payment MADE, ignored");
                         }
 
                     }
