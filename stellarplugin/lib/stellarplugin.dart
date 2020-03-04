@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:stellarplugin/data_models/payment_response.dart';
 
 import 'data_models/account_response_bag.dart';
 
@@ -57,24 +58,36 @@ class Stellar {
     return paymentResponse;
   }
 
-  static Future getPaymentsReceived(
+  static Future<List<PaymentResponse>> getPaymentsReceived(
       {@required String accountId, bool isDevelopmentStatus = true}) async {
     final payments = await _channel.invokeMethod('getPaymentsReceived', {
       "isDevelopmentStatus": '$isDevelopmentStatus',
       "accountId": '$accountId',
     });
-    print('Stellar:  🔵 🔵 🔵 getPaymentsReceived: ' + payments);
-    return payments;
+    print('Stellar:  🔵 🔵 🔵 getPaymentsReceived: string result: ' + payments);
+    return _getPaymentList(payments);
   }
 
-  static Future getPaymentsMade(
+  static Future<List<PaymentResponse>> getPaymentsMade(
       {@required String accountId, isDevelopmentStatus = true}) async {
     final payments = await _channel.invokeMethod('getPaymentsMade', {
       "isDevelopmentStatus": '$isDevelopmentStatus',
       "accountId": '$accountId',
     });
-    print('Stellar:  🔵 🔵 🔵 getPaymentsMade: ' + payments);
-    return payments;
+    print('Stellar:  🔵 🔵 🔵 getPaymentsMade: string result: ' + payments);
+    List<PaymentResponse> mList = _getPaymentList(payments);
+    return mList;
+  }
+
+  static List<PaymentResponse> _getPaymentList(payments) {
+    var mList = List<PaymentResponse>();
+    List respList = jsonDecode(payments);
+    respList.forEach((r) {
+      mList.add(PaymentResponse.fromJson(r));
+    });
+    print(
+        'Stellar:  🔵 🔵 🔵 getPaymentsMade: 💜 ${mList.length} 💜 payment response objects returned');
+    return mList;
   }
 
   static Future getAccount(

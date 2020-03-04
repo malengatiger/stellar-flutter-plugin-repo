@@ -22,6 +22,7 @@ import org.stellar.sdk.requests.EventListener;
 import org.stellar.sdk.requests.PaymentsRequestBuilder;
 import org.stellar.sdk.requests.TransactionsRequestBuilder;
 import org.stellar.sdk.responses.AccountResponse;
+import org.stellar.sdk.responses.Page;
 import org.stellar.sdk.responses.SubmitTransactionResponse;
 import org.stellar.sdk.responses.operations.OperationResponse;
 import org.stellar.sdk.responses.operations.PaymentOperationResponse;
@@ -306,133 +307,70 @@ class StellarOperations {
             }
         }
 
-        List<PaymentOperationResponse> getPaymentsReceived(String accountId) throws Exception {
+        List<PaymentOperationResponse> getPaymentsReceived(final String accountId) throws Exception {
             setServer(isDevelopment);
 
             final KeyPair account = KeyPair.fromAccountId(accountId);
             PaymentsRequestBuilder paymentsRequest = server.payments().forAccount(account.getAccountId());
             final List<PaymentOperationResponse> paymentOperationResponses = new ArrayList<>();
-
             try {
-                paymentsRequest.stream(new EventListener<OperationResponse>() {
-                    @Override
-                    public void onEvent(OperationResponse payment) {
-                        //savePagingToken(payment.getPagingToken());
-                        // The payments stream includes both sent and received payments. We only
-                        // want to process received payments here.
-                        if (payment instanceof PaymentOperationResponse) {
-                            if (((PaymentOperationResponse) payment).getTo().equals(account.getAccountId())) {
-                                PaymentOperationResponse paymentOperationResponse = (PaymentOperationResponse) payment;
-                                paymentOperationResponses.add(paymentOperationResponse);
-                                String amount = ((PaymentOperationResponse) payment).getAmount();
-                                Asset asset = ((PaymentOperationResponse) payment).getAsset();
-                                String assetName;
-                                if (asset.equals(new AssetTypeNative())) {
-                                    assetName = LUMENS;
-                                } else {
-                                    StringBuffer assetNameBuilder = new StringBuffer();
-                                    assetNameBuilder.append(((AssetTypeCreditAlphaNum) asset).getCode());
-                                    assetNameBuilder.append(":");
-                                    assetNameBuilder.append(((AssetTypeCreditAlphaNum) asset).getIssuer());
-                                    assetName = assetNameBuilder.toString();
-                                    LOGGER.info("assetName: " + assetName);
-                                }
-
-                                StringBuffer builder = new StringBuffer();
-                                builder.append(amount);
-                                builder.append(" ");
-                                builder.append(assetName);
-                                builder.append(" from ");
-                                builder.append(((PaymentOperationResponse) payment).getFrom());
-                                LOGGER.info(builder.toString());
-                            }
-
-                        } else {
-                            LOGGER.info("This is NOT my payment RECEIVED, ignored");
+                Page<OperationResponse> responsePage = paymentsRequest
+                        .limit(PAGE_LIMIT)
+                        .execute();
+                List<OperationResponse> responses = responsePage.getRecords();
+                for (OperationResponse operationResponse : responses) {
+                    if (operationResponse instanceof PaymentOperationResponse) {
+                        if (((PaymentOperationResponse) operationResponse).getTo().equals(account.getAccountId())) {
+                            PaymentOperationResponse paymentOperationResponse = (PaymentOperationResponse) operationResponse;
+                            paymentOperationResponses.add(paymentOperationResponse);
+                            Log.d(TAG,"List of Payments made: " + paymentOperationResponses.size()
+                                    + " for account: " + accountId);
                         }
 
+                    } else {
+                        LOGGER.info("This is NOT my operationResponse RECEIVED, ignored");
                     }
-
-                    @Override
-                    public void onFailure(Optional<Throwable> optional, Optional<Integer> optional1) {
-                        try {
-                            throw new Exception("onFailure happened on getting payments");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
+                }
             } catch (Exception e) {
-                LOGGER.severe("Failed to get payments: " + e.getMessage());
+                LOGGER.severe("getPaymentsReceived:Failed to get payments: " + e.getMessage());
                 throw e;
             }
 
+            Log.d(TAG,"getPaymentsReceived:  \uD83E\uDD6C found " + paymentOperationResponses.size() + " payments received by " + accountId);
             return paymentOperationResponses;
         }
 
-        List<PaymentOperationResponse> getPaymentsMade(String accountId) throws Exception {
+        static final int PAGE_LIMIT = 200;
+        List<PaymentOperationResponse> getPaymentsMade(final String accountId) throws Exception {
             setServer(isDevelopment);
             final KeyPair account = KeyPair.fromAccountId(accountId);
             PaymentsRequestBuilder paymentsRequest = server.payments().forAccount(account.getAccountId());
-//            String lastToken = loadLastPagingToken("");
-//            if (lastToken != null) {
-//                paymentsRequest.cursor(lastToken);
-//            }
+
             final List<PaymentOperationResponse> paymentOperationResponses = new ArrayList<>();
             try {
-                paymentsRequest.stream(new EventListener<OperationResponse>() {
-                    @Override
-                    public void onEvent(OperationResponse payment) {
-                        //savePagingToken(payment.getPagingToken());
-                        // The payments stream includes both sent and received payments. We only
-                        // want to process received payments here.
-                        if (payment instanceof PaymentOperationResponse) {
-                            if (((PaymentOperationResponse) payment).getFrom().equals(account.getAccountId())) {
-                                PaymentOperationResponse paymentOperationResponse = (PaymentOperationResponse) payment;
-                                paymentOperationResponses.add(paymentOperationResponse);
-                                String amount = ((PaymentOperationResponse) payment).getAmount();
-                                Asset asset = ((PaymentOperationResponse) payment).getAsset();
-                                String assetName;
-                                if (asset.equals(new AssetTypeNative())) {
-                                    assetName = LUMENS;
-                                } else {
-                                    StringBuffer assetNameBuilder = new StringBuffer();
-                                    assetNameBuilder.append(((AssetTypeCreditAlphaNum) asset).getCode());
-                                    assetNameBuilder.append(":");
-                                    assetNameBuilder.append(((AssetTypeCreditAlphaNum) asset).getIssuer());
-                                    assetName = assetNameBuilder.toString();
-                                    LOGGER.info("assetName: " + assetName);
-                                }
-
-                                StringBuffer builder = new StringBuffer();
-                                builder.append(amount);
-                                builder.append(" ");
-                                builder.append(assetName);
-                                builder.append(" from ");
-                                builder.append(((PaymentOperationResponse) payment).getFrom());
-                                LOGGER.info(builder.toString());
-                            }
-
-                        } else {
-                            LOGGER.info("This is NOT my payment MADE, ignored");
+                Page<OperationResponse> responsePage = paymentsRequest
+                        .limit(PAGE_LIMIT)
+                        .execute();
+                List<OperationResponse> responses = responsePage.getRecords();
+                for (OperationResponse operationResponse : responses) {
+                    if (operationResponse instanceof PaymentOperationResponse) {
+                        if (((PaymentOperationResponse) operationResponse).getFrom().equals(account.getAccountId())) {
+                            PaymentOperationResponse paymentOperationResponse = (PaymentOperationResponse) operationResponse;
+                            paymentOperationResponses.add(paymentOperationResponse);
+                            Log.d(TAG,"List of Payments received: " + paymentOperationResponses.size()
+                                    + " for account: " + accountId);
                         }
 
+                    } else {
+                        LOGGER.info("This is NOT my operationResponse RECEIVED, ignored");
                     }
-
-                    @Override
-                    public void onFailure(Optional<Throwable> optional, Optional<Integer> optional1) {
-                        try {
-                            throw new Exception("onFailure happened on getting payments");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
+                }
             } catch (Exception e) {
-                LOGGER.severe("Failed to get payments: " + e.getMessage());
+                LOGGER.severe("Failed to get payments received: " + e.getMessage());
                 throw e;
             }
 
+            Log.d(TAG,"getPaymentsMade:  \uD83E\uDD6C found " + paymentOperationResponses.size() + " payments made by " + accountId);
             return paymentOperationResponses;
         }
 

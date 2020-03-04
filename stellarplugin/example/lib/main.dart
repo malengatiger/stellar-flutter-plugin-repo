@@ -85,7 +85,7 @@ class _MyAppState extends State<MyApp> {
       return;
     }
     var seed = accountResponses.elementAt(0).secretSeed;
-    var amount = "455";
+    var amount = "900";
     var memo = "Tx from Flutter";
     var destinationAccount =
         accountResponses.elementAt(1).accountResponse.accountId;
@@ -102,6 +102,8 @@ class _MyAppState extends State<MyApp> {
       print(
           '_MyAppState: _sendPayment: 🥬 🥬 🥬 🥬  Payment executed; json from object: ${obj.toJson()}  🍎  🍎 ');
       _getAccount();
+      _getPaymentsReceived();
+      _getPaymentsMade();
     } on PlatformException catch (e) {
       print('🔴 🔴 We have a Plugin problem: 🔴 $e');
     }
@@ -114,19 +116,22 @@ class _MyAppState extends State<MyApp> {
       return;
     }
     try {
-      var paymentsReceived = await Stellar.getPaymentsReceived(
+      paymentsReceived = await Stellar.getPaymentsReceived(
           accountId: accountResponses.elementAt(1).accountResponse.accountId);
       print(
-          '_MyAppState: _getPaymentsReceived: 🥬 🥬 🥬 🥬 👺  Payments received, account #2: $paymentsReceived  🍎 🍎 ');
+          '_MyAppState: _getPaymentsReceived: 🥬 🥬 🥬 🥬 👺  Payments received, account #2: ${paymentsReceived.length}  🍎 🍎 ');
       var paymentsReceived1 = await Stellar.getPaymentsReceived(
           accountId: accountResponses.elementAt(0).accountResponse.accountId);
       print(
-          '_MyAppState: _getPaymentsReceived: 🥬 🥬 🥬 🥬 👺   Payments received, account #1: $paymentsReceived1  🍎 🍎 ');
+          '_MyAppState: _getPaymentsReceived: 🥬 🥬 🥬 🥬 👺   Payments received, account #1: ${paymentsReceived1.length}  🍎 🍎 ');
+      setState(() {});
     } on PlatformException catch (e) {
       print('We have a Plugin problem: $e');
     }
   }
 
+  var paymentsReceived = List<PaymentResponse>();
+  var paymentsMade = List<PaymentResponse>();
   _getPaymentsMade() async {
     if (accountResponses.length < 2) {
       print(
@@ -134,14 +139,15 @@ class _MyAppState extends State<MyApp> {
       return;
     }
     try {
-      var paymentsMade = await Stellar.getPaymentsMade(
+      paymentsMade = await Stellar.getPaymentsMade(
           accountId: accountResponses.first.accountResponse.accountId);
       print(
-          '\n_MyAppState: _getPaymentsMade: 💙💙 💙💙 💙💙 💙💙   Payments made (account #1): $paymentsMade  🍎  🍎 💙💙 💙💙 💙💙 ');
+          '\n_MyAppState: _getPaymentsMade: 💙💙 💙💙 💙💙 💙💙   Payments made (account #1): ${paymentsMade.length}  🍎  🍎 💙💙 💙💙 💙💙 ');
       var paymentsMade1 = await Stellar.getPaymentsMade(
           accountId: accountResponses.elementAt(1).accountResponse.accountId);
       print(
-          '_MyAppState: _getPaymentsMade: 💙💙 💙💙 💙💙 💙💙    Payments made (account #2): $paymentsMade1  🍎  🍎 💙💙 💙💙 💙💙 ');
+          '_MyAppState: _getPaymentsMade: 💙💙 💙💙 💙💙 💙💙    Payments made (account #2): ${paymentsMade1.length}  🍎  🍎 💙💙 💙💙 💙💙 ');
+      setState(() {});
     } on PlatformException catch (e) {
       print('We have a Plugin problem: $e');
     }
@@ -189,7 +195,7 @@ class _MyAppState extends State<MyApp> {
                       style: TextStyle(color: Colors.white),
                     ),
                     SizedBox(
-                      height: 20,
+                      height: 12,
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -199,7 +205,64 @@ class _MyAppState extends State<MyApp> {
                           width: 12,
                         ),
                         Text(
-                          '6',
+                          '5',
+                          style: TextStyle(
+                              fontSize: 30,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        Text('Stellar Accounts'),
+                        SizedBox(
+                          width: 12,
+                        ),
+                        Text(
+                          '${accountResponses.length}',
+                          style: TextStyle(
+                              fontSize: 30,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        Text('Payments Received'),
+                        SizedBox(
+                          width: 12,
+                        ),
+                        Text(
+                          '${paymentsReceived.length}',
+                          style: TextStyle(
+                              fontSize: 30,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        Text('Payments Made'),
+                        SizedBox(
+                          width: 12,
+                        ),
+                        Text(
+                          '${paymentsMade.length}',
                           style: TextStyle(
                               fontSize: 30,
                               color: Colors.white,
@@ -213,7 +276,7 @@ class _MyAppState extends State<MyApp> {
                   ],
                 ),
               ),
-              preferredSize: Size.fromHeight(160)),
+              preferredSize: Size.fromHeight(240)),
         ),
         backgroundColor: Colors.brown[100],
         body: SingleChildScrollView(
@@ -225,7 +288,7 @@ class _MyAppState extends State<MyApp> {
                   height: 16,
                 ),
                 Container(
-                  width: 400,
+                  width: 360,
                   child: RaisedButton(
                     elevation: 4,
                     color: Colors.teal[700],
@@ -243,7 +306,7 @@ class _MyAppState extends State<MyApp> {
                   height: 16,
                 ),
                 Container(
-                  width: 400,
+                  width: 360,
                   child: RaisedButton(
                     elevation: 4,
                     color: Colors.teal[500],
@@ -261,7 +324,7 @@ class _MyAppState extends State<MyApp> {
                   height: 16,
                 ),
                 Container(
-                  width: 400,
+                  width: 360,
                   child: RaisedButton(
                     elevation: 4,
                     color: Colors.blue[700],
@@ -279,7 +342,7 @@ class _MyAppState extends State<MyApp> {
                   height: 16,
                 ),
                 Container(
-                  width: 400,
+                  width: 360,
                   child: RaisedButton(
                     elevation: 4,
                     color: Colors.pink[700],
@@ -297,7 +360,7 @@ class _MyAppState extends State<MyApp> {
                   height: 16,
                 ),
                 Container(
-                  width: 400,
+                  width: 360,
                   child: RaisedButton(
                     elevation: 4,
                     color: Colors.indigo[700],
