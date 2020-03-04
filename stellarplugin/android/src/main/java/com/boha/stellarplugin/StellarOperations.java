@@ -4,12 +4,6 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-
-import com.boha.stellarplugin.listeners.CreateAccountListener;
-import com.boha.stellarplugin.listeners.GetAccountListener;
-import com.boha.stellarplugin.listeners.GetPaymentsMadeListener;
-import com.boha.stellarplugin.listeners.GetPaymentsReceivedListener;
-import com.boha.stellarplugin.listeners.SendPaymentListener;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -23,8 +17,10 @@ import org.stellar.sdk.Network;
 import org.stellar.sdk.PaymentOperation;
 import org.stellar.sdk.Server;
 import org.stellar.sdk.Transaction;
+import org.stellar.sdk.TransactionBuilderAccount;
 import org.stellar.sdk.requests.EventListener;
 import org.stellar.sdk.requests.PaymentsRequestBuilder;
+import org.stellar.sdk.requests.TransactionsRequestBuilder;
 import org.stellar.sdk.responses.AccountResponse;
 import org.stellar.sdk.responses.SubmitTransactionResponse;
 import org.stellar.sdk.responses.operations.OperationResponse;
@@ -45,45 +41,47 @@ class StellarOperations {
     private static final Logger LOGGER = Logger.getLogger(StellarOperations.class.getSimpleName());
     private static final Gson G = new GsonBuilder().setPrettyPrinting().create();
     private static final String DEV_SERVER = "https://horizon-testnet.stellar.org";
-    private static final String PROD_SERVER = "https://horizon-testnet.stellar.org";
-    private static final String FRIEND_BOT = "https://friendbot.stellar.org/?addr=%s", LUMENS = "lumens";
+    private static final String PROD_SERVER = "https://horizon.stellar.org'";
+    private static final String FRIEND_BOT = "https://friendbot.stellar.org/?addr=%s",
+            LUMENS = "lumens";
     private static final int TIMEOUT_IN_SECONDS = 180;
 
     private static boolean isDevelopment;
 
-    void createAccount(boolean isDevelopmentStatus, MethodChannel.Result result, CreateAccountListener createAccountListener) {
+    void createAccount(boolean isDevelopmentStatus, MethodChannel.Result result) {
         LOGGER.info("\uD83E\uDD6C \uD83E\uDD6C \uD83E\uDD6C \uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08 " +
                 ".... Creating new Stellar account ..... " +
                 "\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08 ");
         isDevelopment = isDevelopmentStatus;
-        new StellarTask(createAccountListener, result).execute();
+        new StellarTask(result).execute();
 
     }
 
-    void getAccount(String seed, boolean isDevelopmentStatus, GetAccountListener listener) {
+    void getAccount(String seed, boolean isDevelopmentStatus, MethodChannel.Result result) {
+        Log.d(TAG,"getAccount starting, isDevelopmentStatus:  "
+                + isDevelopmentStatus + " seed: " + seed);
         isDevelopment = isDevelopmentStatus;
-        new StellarTask(seed, listener).execute();
+        new StellarTask(seed, result, false).execute();
     }
 
     void sendPayment(String seed, String destinationAccount,
-                     String amount, String memo, boolean isDevelopmentStatus, SendPaymentListener listener) {
+                     String amount, String memo, boolean isDevelopmentStatus, MethodChannel.Result result) {
         isDevelopment = isDevelopmentStatus;
-        new StellarTask(seed, amount, destinationAccount, memo, listener).execute();
+        new StellarTask(seed, amount, destinationAccount, memo, result).execute();
     }
 
 
-    void getPaymentsReceived(String accountId, boolean isDevelopmentStatus, GetPaymentsReceivedListener listener) {
+    void getPaymentsReceived(String accountId, boolean isDevelopmentStatus, MethodChannel.Result result) {
         isDevelopment = isDevelopmentStatus;
-        new StellarTask(accountId, listener).execute();
+        new StellarTask(accountId, result, true,true).execute();
     }
 
-    void getPaymentsMade(String accountId, boolean isDevelopmentStatus, GetPaymentsMadeListener listener) {
+    void getPaymentsMade(String accountId, boolean isDevelopmentStatus, MethodChannel.Result result) {
         isDevelopment = isDevelopmentStatus;
-        new StellarTask(accountId, listener).execute();
+        new StellarTask(accountId, result, "").execute();
     }
 
     private void savePagingToken(String pagingToken) {
-
     }
 
     private String loadLastPagingToken(String pagingToken) {
@@ -95,16 +93,13 @@ class StellarOperations {
             GET_PAYMENTS_MADE = 4, GET_ACCOUNT = 5;
 
     private static class StellarTask extends AsyncTask<Void, Void, Object> {
-        CreateAccountListener createAccountListener;
-        GetAccountListener getAccountListener;
-        GetPaymentsReceivedListener getPaymentsReceivedListener;
-        SendPaymentListener sendPaymentListener;
-        GetPaymentsMadeListener getPaymentsMadeListener;
+
         String seed, amount, destinationAccount, memo, accountId;
         private Server server;
         private int requestType;
 
         AccountResponse accountResponse;
+        AccountResponseBag accountResponseBag;
         List<PaymentOperationResponse> paymentOperationResponses;
         SubmitTransactionResponse submitTransactionResponse;
         MethodChannel.Result methodResult;
@@ -113,46 +108,47 @@ class StellarOperations {
             Log.d(TAG, "............ setServer starting ...... " +
                     "\uD83D\uDD35 \uD83D\uDD35 \uD83D\uDD35 " + isDevelopment);
             if (isDevelopment) {
+                Log.d(TAG,"Setting up Stellar Testnet Server ...");
                 server = new Server(DEV_SERVER);
             } else {
+                Log.d(TAG,"Setting up Stellar Public Server ...");
                 server = new Server(PROD_SERVER);
             }
             Log.d(TAG, "\uD83C\uDF4F \uD83C\uDF4F \uD83C\uDF4F \uD83C\uDF4F " +
                     "Server is " + server.toString());
         }
 
-        StellarTask(String seed, String amount, String destinationAccount, String memo, SendPaymentListener sendPaymentListener) {
+        StellarTask(String seed, String amount, String destinationAccount, String memo, MethodChannel.Result methodResult) {
             this.seed = seed;
             this.amount = amount;
             this.destinationAccount = destinationAccount;
             this.memo = memo;
-            this.sendPaymentListener = sendPaymentListener;
+            this.methodResult = methodResult;
             requestType = SEND_PAYMENT;
         }
 
-        StellarTask(String accountId, GetPaymentsReceivedListener getPaymentsReceivedListener) {
+        StellarTask(String accountId, MethodChannel.Result methodResult, boolean dummy, boolean dummy2) {
             this.accountId = accountId;
-            this.getPaymentsReceivedListener = getPaymentsReceivedListener;
+            this.methodResult = methodResult;
             requestType = GET_PAYMENTS_RECEIVED;
 
         }
 
-        StellarTask(String accountId, GetPaymentsMadeListener getPaymentsMadeListener) {
+        StellarTask(String accountId, MethodChannel.Result methodResult, String dummy) {
             this.accountId = accountId;
-            this.getPaymentsMadeListener = getPaymentsMadeListener;
-            requestType = GET_PAYMENTS_RECEIVED;
+            requestType = GET_PAYMENTS_MADE;
+            this.methodResult = methodResult;
 
         }
 
-        StellarTask(String accountId, GetAccountListener getAccountListener) {
-            this.accountId = accountId;
-            this.getAccountListener = getAccountListener;
+        StellarTask(String seed, MethodChannel.Result methodResult, boolean dummy) {
+            this.seed = seed;
+            this.methodResult = methodResult;
             requestType = GET_ACCOUNT;
 
         }
 
-        StellarTask(CreateAccountListener createAccountListener, MethodChannel.Result methodResult) {
-            this.createAccountListener = createAccountListener;
+        StellarTask( MethodChannel.Result methodResult) {
             requestType = CREATE_ACCOUNT;
             this.methodResult = methodResult;
         }
@@ -165,37 +161,37 @@ class StellarOperations {
             switch (requestType) {
                 case CREATE_ACCOUNT:
                     try {
-                        accountResponse = createAccount();
+                        accountResponseBag = createAccount();
                     } catch (Exception e) {
-                        returnedObject =  e;
+                        returnedObject = e;
                     }
                     break;
                 case SEND_PAYMENT:
                     try {
                         submitTransactionResponse = sendPayment(seed, destinationAccount, amount, memo);
                     } catch (Exception e) {
-                        returnedObject =  e;
+                        returnedObject = e;
                     }
                     break;
                 case GET_PAYMENTS_MADE:
                     try {
                         paymentOperationResponses = getPaymentsMade(accountId);
                     } catch (Exception e) {
-                        returnedObject =  e;
+                        returnedObject = e;
                     }
                     break;
                 case GET_PAYMENTS_RECEIVED:
                     try {
                         paymentOperationResponses = getPaymentsReceived(accountId);
                     } catch (Exception e) {
-                        returnedObject =  e;
+                        returnedObject = e;
                     }
                     break;
                 case GET_ACCOUNT:
                     try {
                         accountResponse = getAccount(seed);
                     } catch (Exception e) {
-                        returnedObject =  e;
+                        returnedObject = e;
                     }
                     break;
                 default:
@@ -207,7 +203,7 @@ class StellarOperations {
             return returnedObject;
         }
 
-        AccountResponse createAccount() throws Exception {
+        AccountResponseBag createAccount() throws Exception {
             LOGGER.info("\uD83E\uDD6C \uD83E\uDD6C \uD83E\uDD6C Creating new, like Stellar account ... " +
                     "\uD83D\uDD35 about to call KeyPair.random() ...... \uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08  ");
             setServer(isDevelopment);
@@ -215,7 +211,8 @@ class StellarOperations {
             try {
                 InputStream response;
                 KeyPair pair = KeyPair.random();
-                LOGGER.info("\uD83D\uDC99 \uD83D\uDC99 Secret Seed: " + new String(pair.getSecretSeed()));
+                String secret = new String(pair.getSecretSeed());
+                LOGGER.info("\uD83D\uDC99 \uD83D\uDC99 Secret Seed: " + secret);
                 LOGGER.info("\uD83D\uDC99 \uD83D\uDC99 New Account Id: " + pair.getAccountId());
                 if (isDevelopment) {
                     LOGGER.info("\n\uD83D\uDC99 \uD83D\uDC99 ...... begging FriendBot for Lumens ... .........");
@@ -243,10 +240,11 @@ class StellarOperations {
                         "Stellar account has been created Alrighttt!:  \uD83C\uDF4E \uD83C\uDF4E YEBOOOO!!!"
                         + accountResponse.getAccountId() + " \uD83D\uDC99 \uD83D\uDC99 \uD83D\uDC99 \uD83D\uDC99 ");
                 LOGGER.info(G.toJson(accountResponse));
-                createAccountListener.onAccountCreated(accountResponse);
                 LOGGER.info("\uD83D\uDC99 \uD83D\uDC99 Account created OK: account: " + accountResponse.getAccountId());
                 LOGGER.info("\uD83D\uDC99 \uD83D\uDC99 Account created OK: balance: " + accountResponse.getBalances()[0].getBalance());
-                return accountResponse;
+                AccountResponseBag bag = new AccountResponseBag(secret,accountResponse);
+                Log.d(TAG, "\uD83D\uDC99 bag sent back \uD83D\uDC99" + G.toJson(bag));
+                return bag;
             } catch (IOException e) {
                 LOGGER.severe("Failed to create account - see below ...");
                 throw new Exception("\uD83D\uDD34 Unable to create Account", e);
@@ -256,8 +254,14 @@ class StellarOperations {
 
         AccountResponse getAccount(String seed) throws IOException {
             setServer(isDevelopment);
+
             KeyPair source = KeyPair.fromSecretSeed(seed);
-            return server.accounts().account(source.getAccountId());
+            String accountId = source.getAccountId();
+            Log.d(TAG,"getAccount: AccountID from seed: " + seed);
+            Log.d(TAG,"getAccount: AccountID from seed, accountId derived: " + accountId);
+            AccountResponse resp = server.accounts().account(accountId);
+            Log.d(TAG, resp == null? "Account not found":"Account found: " + resp.getAccountId());
+            return resp;
         }
 
         SubmitTransactionResponse sendPayment(String seed, String destinationAccount,
@@ -274,17 +278,25 @@ class StellarOperations {
 
             AccountResponse destAccount = server.accounts().account(destination.getAccountId());
             AccountResponse sourceAccount = server.accounts().account(source.getAccountId());
-            Account account = new Account(source.getAccountId(), sourceAccount.getIncrementedSequenceNumber());
-
-            Transaction transaction = new Transaction.Builder(account, network)
-                    .addOperation(new PaymentOperation.Builder(destAccount.getAccountId(), new AssetTypeNative(), amount).build())
+//            sourceAccount.incrementSequenceNumber();
+//            Long seq = sourceAccount.getIncrementedSequenceNumber();
+            Log.d(TAG, "\uD83D\uDC99  sequence number from source account: \uD83D\uDC99 " +
+                    sourceAccount.getSequenceNumber()
+            + ",  incremented: \uD83D\uDD35 " + sourceAccount.getIncrementedSequenceNumber());
+//            Account account = new Account(source.getAccountId(), seq);
+//            Transaction transactionx = new Transaction.Builder(sourceAccount, network)
+//                    .build();
+            Transaction transaction = new Transaction.Builder(sourceAccount, network)
+                    .addOperation(new PaymentOperation.Builder(destAccount.getAccountId(),
+                            new AssetTypeNative(), amount).build())
                     .addMemo(Memo.text(memo == null ? "N/A" : memo))
                     .setTimeout(TIMEOUT_IN_SECONDS)
+                    .setOperationFee(100)
                     .build();
             try {
                 transaction.sign(source);
                 SubmitTransactionResponse response = server.submitTransaction(transaction);
-                LOGGER.info("SubmitTransactionResponse:  \uD83D\uDC99 Success? : " + response.isSuccess() + "  \uD83D\uDC99 ");
+                LOGGER.info("SubmitTransactionResponse: \uD83D\uDC99 Success? : " + response.isSuccess() + " \uD83D\uDC99 ");
                 LOGGER.info(G.toJson(response));
                 return response;
             } catch (Exception e) {
@@ -435,52 +447,62 @@ class StellarOperations {
                     case CREATE_ACCOUNT:
                         String msg = "Create Account Failed";
                         Log.e(TAG, msg, (Exception) result);
-                        createAccountListener.onError(msg);
+                        returnError("101", msg, "", methodResult);
                         break;
                     case SEND_PAYMENT:
                         String msg2 = "Send PaymentFailed";
                         Log.e(TAG, msg2, (Exception) result);
-                        sendPaymentListener.onError(msg2);
+                        returnError("102", msg2, "", methodResult);
                         break;
                     case GET_ACCOUNT:
                         String msg3 = "Get Account Failed";
                         Log.e(TAG, msg3, (Exception) result);
-                        getAccountListener.onError(msg3);
+                        returnError("103", msg3, "", methodResult);
                         break;
                     case GET_PAYMENTS_MADE:
                         String msg4 = "Get Payments Made Failed";
                         Log.e(TAG, msg4, (Exception) result);
-                        getPaymentsMadeListener.onError(msg4);
+                        returnError("104", msg4, "", methodResult);
                         break;
                     case GET_PAYMENTS_RECEIVED:
                         String msg5 = "Get Payments Received Failed";
                         Log.e(TAG, msg5, (Exception) result);
-                        getPaymentsReceivedListener.onError(msg5);
+                        returnError("105", msg5, "", methodResult);
                         break;
                 }
             } else {
                 switch (requestType) {
                     case CREATE_ACCOUNT:
-                        returnAccountResponse(accountResponse,methodResult);
-                        break;
-                    case SEND_PAYMENT:
-                        sendPaymentListener.onPaymentSent(submitTransactionResponse);
+                        returnAccountResponseBag(accountResponseBag, methodResult);
                         break;
                     case GET_ACCOUNT:
-                        getAccountListener.onAccountResponse(accountResponse);
+                        returnAccountResponse(accountResponse, methodResult);
+                        break;
+                    case SEND_PAYMENT:
+                        returnPaymentResponse(submitTransactionResponse, methodResult);
                         break;
                     case GET_PAYMENTS_MADE:
-                        getPaymentsMadeListener.onPaymentsMade(paymentOperationResponses);
-                        break;
                     case GET_PAYMENTS_RECEIVED:
-                        getPaymentsReceivedListener.onPaymentsReceived(paymentOperationResponses);
+                        returnPayments(paymentOperationResponses, methodResult);
                         break;
                 }
             }
         }
     }
+
     static private Handler uiThreadHandler = new Handler(Looper.getMainLooper());
-   static private void returnAccountResponse(final AccountResponse accountResponse, final MethodChannel.Result result) {
+
+    static private void returnAccountResponseBag(final AccountResponseBag accountResponseBag,
+                                                 final MethodChannel.Result result) {
+        uiThreadHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                result.success(G.toJson(accountResponseBag));
+            }
+        });
+    }
+    static private void returnAccountResponse(final AccountResponse accountResponse,
+                                              final MethodChannel.Result result) {
         uiThreadHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -488,5 +510,30 @@ class StellarOperations {
             }
         });
     }
+    static private void returnPaymentResponse(final SubmitTransactionResponse transactionResponse, final MethodChannel.Result result) {
+        uiThreadHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                result.success(G.toJson(transactionResponse));
+            }
+        });
+    }
+    static private void returnPayments(final List<PaymentOperationResponse> accountResponse, final MethodChannel.Result result) {
+        uiThreadHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                result.success(G.toJson(accountResponse));
+            }
+        });
+    }
+    static private void returnError(final String code, final String message, final String reason, final MethodChannel.Result result) {
+        uiThreadHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                result.error(code,message,reason);
+            }
+        });
+    }
+
     private static final String TAG = StellarOperations.class.getSimpleName();
 }

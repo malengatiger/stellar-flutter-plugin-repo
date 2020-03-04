@@ -1,23 +1,20 @@
 package com.boha.stellarplugin;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-
-import com.boha.stellarplugin.listeners.CreateAccountListener;
-import com.boha.stellarplugin.listeners.GetAccountListener;
-import com.boha.stellarplugin.listeners.GetPaymentsMadeListener;
-import com.boha.stellarplugin.listeners.GetPaymentsReceivedListener;
-import com.boha.stellarplugin.listeners.SendPaymentListener;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import org.jetbrains.annotations.NotNull;
-import org.stellar.sdk.responses.AccountResponse;
-import org.stellar.sdk.responses.SubmitTransactionResponse;
-import org.stellar.sdk.responses.operations.PaymentOperationResponse;
 
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.logging.Logger;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -34,11 +31,53 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
     private static final Logger LOGGER = Logger.getLogger(StellarpluginPlugin.class.getSimpleName());
     private static final Gson G = new GsonBuilder().setPrettyPrinting().create();
     private Handler uiThreadHandler = new Handler(Looper.getMainLooper());
+    private Context context;
+
+    private void writeToFile(String data) {
+        try {
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput("config.txt", Context.MODE_PRIVATE));
+            outputStreamWriter.write(data);
+            outputStreamWriter.close();
+        }
+        catch (IOException e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
+    }
+    private String readFromFile() {
+
+        String ret = "";
+
+        try {
+            InputStream inputStream = context.openFileInput("config.txt");
+
+            if ( inputStream != null ) {
+                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                String receiveString = "";
+                StringBuilder stringBuilder = new StringBuilder();
+
+                while ( (receiveString = bufferedReader.readLine()) != null ) {
+                    stringBuilder.append("\n").append(receiveString);
+                }
+
+                inputStream.close();
+                ret = stringBuilder.toString();
+            }
+        }
+        catch (FileNotFoundException e) {
+            Log.e("login activity", "File not found: " + e.toString());
+        } catch (IOException e) {
+            Log.e("login activity", "Can not read file: " + e.toString());
+        }
+
+        return ret;
+    }
 
     @Override
     public void onAttachedToEngine(FlutterPluginBinding flutterPluginBinding) {
         final MethodChannel channel = new MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "stellarplugin");
         channel.setMethodCallHandler(new StellarpluginPlugin());
+        context = flutterPluginBinding.getApplicationContext();
         LOGGER.info("\uD83D\uDD35 onAttachedToEngine completed ... methodChannel: " + channel.toString());
     }
 
@@ -46,6 +85,7 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
         final MethodChannel channel = new MethodChannel(registrar.messenger(), "stellarplugin");
         channel.setMethodCallHandler(new StellarpluginPlugin());
         LOGGER.info("\uD83D\uDD35 registerWith completed... ");
+
     }
 
     private boolean isDevelopment;
@@ -57,6 +97,12 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
     public void onMethodCall(MethodCall call, @NotNull Result result) {
         LOGGER.info("\uD83D\uDD35 .... \uD83D\uDC99 \uD83D\uDC99  " +
                 "onMethodCall started inside plugin... \uD83D\uDC99 \uD83D\uDC99 ");
+        String msg =  context == null? "NO CONTEXT here":"WE have a fucking CONTEXT!!";
+        LOGGER.warning("Do we have a handle to context? ".concat(msg));
+        if (context != null) {
+            SharedPreferences prefs = context.getSharedPreferences("s", 0);
+
+        }
         this.result = result;
         this.call = call;
         String callMethod = call.method;
@@ -93,35 +139,13 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
     private void createAccount() {
         Log.d(TAG, "\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08 createAccount ...");
         try {
-            operations.createAccount(isDevelopment, result, new CreateAccountListener() {
-                @Override
-                public void onAccountCreated(final AccountResponse accountResponse) {
-                    LOGGER.info("\uD83E\uDDA0 Create account has worked,Boss! " + accountResponse.getAccountId());
-                    //returnAccountResponse(accountResponse);
-                }
-
-                @Override
-                public void onError(String message) {
-                    result.error("100", "Create Account has failed spectacularly", message);
-                }
-            });
-
+            operations.createAccount(isDevelopment, result);
         } catch (Exception e) {
             Log.e(TAG, "\uD83D\uDD34 \uD83D\uDD34 \uD83D\uDD34 \uD83D\uDD34" +
                     "  Create account all fucked!", e);
             result.error("100", "Create Account has failed spectacularly", "\uD83D\uDD34");
 
         }
-    }
-
-
-    private void returnError(final String code, final String message,final String reason ) {
-        uiThreadHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                result.error(code,message,reason);
-            }
-        });
     }
 
 
@@ -145,19 +169,7 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
     private void getAccount() {
         String accountId = call.argument("seed");
         try {
-            operations.getAccount(accountId, isDevelopment, new GetAccountListener() {
-                @Override
-                public void onAccountResponse(AccountResponse accountResponse) {
-                    LOGGER.info("\uD83E\uDDA0 getAccount received OK: " + accountResponse.getAccountId());
-                    result.success(G.toJson(accountResponse));
-                }
-
-                @Override
-                public void onError(String message) {
-                    result.error("103", "GetAccount has failed", message);
-                }
-            });
-
+            operations.getAccount(accountId, isDevelopment, result);
         } catch (Exception e) {
             Log.e(TAG, "\uD83D\uDD34 getAccount failed", e);
             result.error("103", "GetAccount has failed", "\uD83D\uDD34");
@@ -167,19 +179,7 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
     private void getPaymentsReceived() {
         String accountId = call.argument("accountId");
         try {
-            operations.getPaymentsReceived(accountId, isDevelopment, new GetPaymentsReceivedListener() {
-                @Override
-                public void onPaymentsReceived(List<PaymentOperationResponse> responses) {
-                    LOGGER.info("\uD83E\uDDA0 Payments received OK: " + responses.size());
-                    result.success(G.toJson(responses));
-                }
-
-                @Override
-                public void onError(String message) {
-                    result.error("102", "GetPaymentsReceived has failed", message);
-                }
-            });
-
+            operations.getPaymentsReceived(accountId, isDevelopment, result);
         } catch (Exception e) {
             Log.e(TAG, "\uD83D\uDD34 getPaymentsReceived failed", e);
             result.error("102", "GetPaymentsReceived has failed", "\uD83D\uDD34");
@@ -189,19 +189,7 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
     private void getPaymentsMade() {
         String accountId = call.argument("accountId");
         try {
-            operations.getPaymentsMade(accountId, isDevelopment, new GetPaymentsMadeListener() {
-                @Override
-                public void onPaymentsMade(List<PaymentOperationResponse> responses) {
-                    LOGGER.info("\uD83E\uDDA0 Payments made OK: " + responses.size());
-                    result.success(G.toJson(responses));
-                }
-
-                @Override
-                public void onError(String message) {
-                    result.error("102", "GetPaymentsMade has failed", message);
-                }
-            });
-
+            operations.getPaymentsMade(accountId, isDevelopment, result);
         } catch (Exception e) {
             Log.e(TAG, "\uD83D\uDD34 getPaymentsMade failed", e);
             result.error("102", "GetPaymentsMade has failed", "\uD83D\uDD34");
@@ -214,19 +202,7 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
         String amount = call.argument("amount");
         String memo = call.argument("memo");
         try {
-            operations.sendPayment(seed, destAccount, amount, memo, isDevelopment, new SendPaymentListener() {
-                @Override
-                public void onPaymentSent(SubmitTransactionResponse response) {
-                    LOGGER.info("\uD83E\uDDA0 Send payment went alright: " + response.isSuccess());
-                    result.success(G.toJson(response));
-                }
-
-                @Override
-                public void onError(String message) {
-                    result.error("100", "Create Account has failed", message);
-                }
-            });
-
+            operations.sendPayment(seed, destAccount, amount, memo, isDevelopment, result);
         } catch (Exception e) {
             Log.e(TAG, "\uD83D\uDD34 sendPayment failed", e);
             result.error("100", "Create Account has failed", "\uD83D\uDD34");

@@ -1,7 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:stellarplugin/data_models/account_response.dart';
+import 'package:stellarplugin/data_models/account_response_bag.dart';
+import 'package:stellarplugin/data_models/payment_response.dart';
 import 'package:stellarplugin/stellarplugin.dart';
 
 void main() => runApp(MyApp());
@@ -25,7 +29,7 @@ class _MyAppState extends State<MyApp> {
     print('🔆 🔆 🔆 🔆 🔆 🔆 🔆 🔆  initPlatformState');
     String platformVersion;
     try {
-      platformVersion = await Stellarplugin.platformVersion;
+      platformVersion = await Stellar.platformVersion;
       print(
           '🔆 🔆 🔆 🔆 $platformVersion is apparently the Android version we are on  🍎  🍎 ');
     } on PlatformException {
@@ -43,23 +47,27 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  List<AccountResponseBag> accountResponses = List();
+
   var _key = GlobalKey<ScaffoldState>();
-  _createAccounts() async {
-    print('🔆 🔆 🔆 🔆 🔆 🔆 🔆 🔆  _createAccounts .....');
+  _createAccount() async {
+    print('🔆 🔆 🔆 🔆 🔆 🔆 🔆 🔆  _createAccounts starting .....');
     try {
-      var acct = await Stellarplugin.createAccount(true);
-      print(
-          '_MyAppState:  🥬 🥬 🥬 🥬  _createAccounts: 🥬 🥬 🥬 🥬  Account created: '
-          '$acct  🍎  🍎 ');
+      var accountResponse =
+          await Stellar.createAccount(isDevelopmentStatus: true);
+      accountResponses.add(accountResponse);
+      print('_MyAppState:  🥬 🥬 🥬 🥬  _createAccounts: 🥬 🥬 🥬 🥬  '
+          'Account created by Stellar returned: 🍎 Accounts: ${accountResponses.length} 🍎');
       setState(() {
         widgets.add(Text(
-          "🍎🍎🍎🍎 Account has been created $acct 🍎",
+          "🍎 🍎 🍎 🍎 Account has been created with balances: ${accountResponse.accountResponse.balances.length} 🍎"
+          " Balance: ${accountResponse.accountResponse.balances.first.balance} ${accountResponse.accountResponse.balances.first.assetType} ",
           style:
-              TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo[400]),
+              TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo[500]),
         ));
       });
     } on PlatformException catch (e) {
-      print('🔴🔴🔴 We have a Plugin problem');
+      print('🔴 🔴 🔴 We have a Plugin problem');
       setState(() {
         widgets.add(Text(
           "🔴 We have a problem ... $e",
@@ -71,20 +79,39 @@ class _MyAppState extends State<MyApp> {
   }
 
   _sendPayment() async {
-    try {
-      var acct = await Stellarplugin.createAccount;
+    if (accountResponses.length < 2) {
       print(
-          '_MyAppState: _createAccounts: 🥬 🥬 🥬 🥬  Account created: $acct  🍎  🍎 ');
-    } on PlatformException {
-      print('We have a Plugin problem');
+          '🔆 🔆 🔆 🔆 Please create at least 2 accounts for this (payment tranx) to work');
+      return;
+    }
+    var seed = accountResponses.elementAt(0).secretSeed;
+    var amount = "20";
+    var memo = "Tx from Flutter";
+    var destinationAccount =
+        accountResponses.elementAt(1).accountResponse.accountId;
+    try {
+      var response = await Stellar.sendPayment(
+          seed: seed,
+          destinationAccount: destinationAccount,
+          amount: amount,
+          memo: memo,
+          isDevelopmentStatus: true);
+      print(
+          '_MyAppState: _sendPayment: 🥬 🥬 🥬 🥬  Payment executed, check if error: $response  🍎  🍎 ');
+      var obj = PaymentResponse.fromJson(jsonDecode(response));
+      print(
+          '_MyAppState: _sendPayment: 🥬 🥬 🥬 🥬  Payment executed; json from object: ${obj.toJson()}  🍎  🍎 ');
+      _getAccount();
+    } on PlatformException catch (e) {
+      print('🔴 🔴 We have a Plugin problem: 🔴 $e');
     }
   }
 
   _getPaymentsReceived() async {
     try {
-      var acct = await Stellarplugin.createAccount;
-      print(
-          '_MyAppState: _createAccounts: 🥬 🥬 🥬 🥬  Account created: $acct  🍎  🍎 ');
+//      var acct = await Stellar.createAccount;
+//      print(
+//          '_MyAppState: _createAccounts: 🥬 🥬 🥬 🥬  Account created: $acct  🍎  🍎 ');
     } on PlatformException {
       print('We have a Plugin problem');
     }
@@ -92,19 +119,29 @@ class _MyAppState extends State<MyApp> {
 
   _getPaymentsMade() async {
     try {
-      var acct = await Stellarplugin.createAccount;
-      print(
-          '_MyAppState: _createAccounts: 🥬 🥬 🥬 🥬  Account created: $acct  🍎  🍎 ');
+//      var acct = await Stellar.createAccount;
+//      print(
+//          '_MyAppState: _createAccounts: 🥬 🥬 🥬 🥬  Account created: $acct  🍎  🍎 ');
     } on PlatformException {
       print('We have a Plugin problem');
     }
   }
 
   _getAccount() async {
+    print(
+        '_MyAppState: _getAccount: 🥬 🥬 🥬 🥬  .... getting Account from Stellar  🍎  🍎 ');
+    if (accountResponses.isEmpty) {
+      print('You need at least 1 account created for this to work 🔆 🔆 🔆 🔆');
+    }
     try {
-      var acct = await Stellarplugin.createAccount;
+      var acct = await Stellar.getAccount(
+          seed: accountResponses.elementAt(0).secretSeed);
+
+      var mJson = jsonDecode(acct);
+      var response = AccountResponse.fromJson(mJson);
       print(
-          '_MyAppState: _createAccounts: 🥬 🥬 🥬 🥬  Account created: $acct  🍎  🍎 ');
+          '_MyAppState: _getAccount: 🥬 🥬 🥬 🥬  Account retrieved: ${response.accountId}  🍎 '
+          'balance: ${response.balances.first.balance} ${response.balances.first.assetType} 🍎 ');
     } on PlatformException {
       print('We have a Plugin problem');
     }
@@ -173,11 +210,29 @@ class _MyAppState extends State<MyApp> {
                   child: RaisedButton(
                     elevation: 4,
                     color: Colors.teal[700],
-                    onPressed: _createAccounts,
+                    onPressed: _createAccount,
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Text(
-                        'Create Accounts',
+                        'Create Account',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  height: 16,
+                ),
+                Container(
+                  width: 400,
+                  child: RaisedButton(
+                    elevation: 4,
+                    color: Colors.teal[500],
+                    onPressed: _getAccount,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        'Retrieve Account',
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
@@ -250,24 +305,6 @@ class _MyAppState extends State<MyApp> {
                       padding: const EdgeInsets.all(16.0),
                       child: Text(
                         'Get Payments Received',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: 16,
-                ),
-                Container(
-                  width: 400,
-                  child: RaisedButton(
-                    elevation: 4,
-                    color: Colors.teal[300],
-                    onPressed: _getAccount,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        'Get Account',
                         style: TextStyle(color: Colors.white),
                       ),
                     ),

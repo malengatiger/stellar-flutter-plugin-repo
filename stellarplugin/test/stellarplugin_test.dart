@@ -18,6 +18,6 @@ void main() {
   });
 
   test('getPlatformVersion', () async {
-    expect(await Stellarplugin.platformVersion, '42');
+    expect(await Stellar.platformVersion, '42');
   });
 }
