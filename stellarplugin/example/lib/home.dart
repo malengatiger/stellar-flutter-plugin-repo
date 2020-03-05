@@ -401,12 +401,19 @@ class _HomeState extends State<Home> {
                     ],
                   ),
                   SizedBox(
-                    height: 28,
+                    height: 12,
+                  ),
+                  Text(
+                    'Tap totals to see more account details ...',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  SizedBox(
+                    height: 20,
                   ),
                 ],
               ),
             ),
-            preferredSize: Size.fromHeight(260)),
+            preferredSize: Size.fromHeight(280)),
       ),
       body: isBusy
           ? Center(
