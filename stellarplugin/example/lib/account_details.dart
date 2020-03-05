@@ -3,8 +3,8 @@ import 'package:stellarplugin/data_models/account_response.dart';
 import 'package:stellarplugin/data_models/payment_response.dart';
 
 class AccountDetails extends StatelessWidget {
-  final List<PaymentResponse> paymentsReceived;
-  final List<PaymentResponse> paymentsMade;
+  final List<SubmitTransactionResponse> paymentsReceived;
+  final List<SubmitTransactionResponse> paymentsMade;
   final AccountResponse accountResponse;
 
   AccountDetails(

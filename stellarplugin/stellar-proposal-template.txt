@@ -1,0 +1,19 @@
+Please copy this template below and replace the text after the colons with your content. This is critically important as it allows us to regex off the template to display prettier and more detailed project previews on the voting site and in promotional material. Break this template and we may disqualify your proposal.
+
+Image header: 1200x630 image preview of your project or project brand (keep margins in mind).
+
+Project title: The name of your project. Please adhere to the Stellar brand policy.
+
+Summary: A simple sentence summary of your project.
+
+Category: Choose one the three categories (Applications, tools, infrastructure | Resources & Content | Events & Programs)
+
+Goals: What your project plans to accomplish broken down by objectives.
+
+Timeline: How and when you will accomplish your goals.
+
+Description: The description should answer questions like “what does your project enable users to do?” “Why is your project valuable for Stellar?” and “Wow does your project use Stellar?” It should also cover what platforms the project supports (ex; Windows, Chrome, etc.) and relevant documentation. This section should be very detailed.
+
+Links: Links to your application, code repository, supporting materials, and/or home site. If you are submitting a proposal for content pieces (like walkthroughs), please provide links to the content pieces.
+
+Tags: Tag your project. Examples can be “sdk, javascript, party, game, book”

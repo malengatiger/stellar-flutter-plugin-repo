@@ -90,7 +90,7 @@ class _MyAppState extends State<MyApp> {
       return;
     }
     var seed = accountResponses.elementAt(0).secretSeed;
-    var amount = "1200";
+    var amount = "12.56";
     var memo = "Tx from Flutter";
     var destinationAccount =
         accountResponses.elementAt(1).accountResponse.accountId;
@@ -105,10 +105,7 @@ class _MyAppState extends State<MyApp> {
           memo: memo,
           isDevelopmentStatus: true);
       print(
-          '_MyAppState: _sendPayment: 🥬 🥬 🥬 🥬  Payment executed, check if error: $response  🍎  🍎 ');
-      var obj = PaymentResponse.fromJson(jsonDecode(response));
-      print(
-          '_MyAppState: _sendPayment: 🥬 🥬 🥬 🥬  Payment executed; json from object: ${obj.toJson()}  🍎  🍎 ');
+          '_MyAppState: _sendPayment: 🥬 🥬 🥬 🥬  Payment executed; json from object: ${response.toJson()}  🍎  🍎 ');
       _getAccount();
       _getPaymentsReceived();
       _getPaymentsMade();
@@ -131,14 +128,15 @@ class _MyAppState extends State<MyApp> {
       setState(() {
         isBusy = true;
       });
-      paymentsReceived = await Stellar.getPaymentsReceived(
-          accountId: accountResponses.elementAt(1).accountResponse.accountId);
+
+      paymentsReceived0 = await Stellar.getPaymentsReceived(
+          seed: accountResponses.elementAt(0).secretSeed);
       print(
-          '_MyAppState: _getPaymentsReceived: 🥬 🥬 🥬 🥬 👺  Payments received, account #2: ${paymentsReceived.length}  🍎 🍎 ');
-      var paymentsReceived1 = await Stellar.getPaymentsReceived(
-          accountId: accountResponses.elementAt(0).accountResponse.accountId);
+          '_MyAppState: _getPaymentsReceived: 🥬 🥬 🥬 🥬 👺   Payments received, account #1: ${paymentsReceived0.length}  🍎 🍎 ');
+      paymentsReceived1 = await Stellar.getPaymentsReceived(
+          seed: accountResponses.elementAt(1).secretSeed);
       print(
-          '_MyAppState: _getPaymentsReceived: 🥬 🥬 🥬 🥬 👺   Payments received, account #1: ${paymentsReceived1.length}  🍎 🍎 ');
+          '_MyAppState: _getPaymentsReceived: 🥬 🥬 🥬 🥬 👺  Payments received, account #2: ${paymentsReceived1.length}  🍎 🍎 ');
       setState(() {
         isBusy = false;
       });
@@ -147,8 +145,10 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  var paymentsReceived = List<PaymentResponse>();
-  var paymentsMade = List<PaymentResponse>();
+  var paymentsReceived0 = List<PaymentOperationResponse>();
+  var paymentsReceived1 = List<PaymentOperationResponse>();
+  var paymentsMade0 = List<PaymentOperationResponse>();
+  var paymentsMade1 = List<PaymentOperationResponse>();
   _getPaymentsMade() async {
     if (accountResponses.length < 2) {
       print(
@@ -159,12 +159,12 @@ class _MyAppState extends State<MyApp> {
       setState(() {
         isBusy = true;
       });
-      paymentsMade = await Stellar.getPaymentsMade(
-          accountId: accountResponses.first.accountResponse.accountId);
+      paymentsMade0 = await Stellar.getPaymentsMade(
+          seed: accountResponses.first.secretSeed);
       print(
-          '\n_MyAppState: _getPaymentsMade: 💙💙 💙💙 💙💙 💙💙   Payments made (account #1): ${paymentsMade.length}  🍎  🍎 💙💙 💙💙 💙💙 ');
-      var paymentsMade1 = await Stellar.getPaymentsMade(
-          accountId: accountResponses.elementAt(1).accountResponse.accountId);
+          '\n_MyAppState: _getPaymentsMade: 💙💙 💙💙 💙💙 💙💙   Payments made (account #1): ${paymentsMade0.length}  🍎  🍎 💙💙 💙💙 💙💙 ');
+      paymentsMade1 = await Stellar.getPaymentsMade(
+          seed: accountResponses.elementAt(1).secretSeed);
       print(
           '_MyAppState: _getPaymentsMade: 💙💙 💙💙 💙💙 💙💙    Payments made (account #2): ${paymentsMade1.length}  🍎  🍎 💙💙 💙💙 💙💙 ');
       setState(() {
@@ -213,6 +213,7 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Stellar Flutter Plugin'),
           backgroundColor: Colors.pink[300],
+          actions: <Widget>[],
           bottom: PreferredSize(
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
@@ -271,7 +272,7 @@ class _MyAppState extends State<MyApp> {
                           width: 12,
                         ),
                         Text(
-                          '${paymentsReceived.length}',
+                          '${paymentsReceived0.length}',
                           style: TextStyle(
                               fontSize: 30,
                               color: Colors.white,
@@ -290,7 +291,7 @@ class _MyAppState extends State<MyApp> {
                           width: 12,
                         ),
                         Text(
-                          '${paymentsMade.length}',
+                          '${paymentsMade0.length}',
                           style: TextStyle(
                               fontSize: 30,
                               color: Colors.white,
@@ -304,7 +305,7 @@ class _MyAppState extends State<MyApp> {
                   ],
                 ),
               ),
-              preferredSize: Size.fromHeight(240)),
+              preferredSize: Size.fromHeight(260)),
         ),
         backgroundColor: Colors.brown[100],
         body: isBusy

@@ -31,7 +31,6 @@ import org.stellar.sdk.responses.Page;
 import org.stellar.sdk.responses.SubmitTransactionResponse;
 import org.stellar.sdk.responses.operations.OperationResponse;
 import org.stellar.sdk.responses.operations.PaymentOperationResponse;
-import org.stellar.sdk.xdr.AccountMergeResult;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,6 +52,55 @@ class StellarOperations {
     private static final int TIMEOUT_IN_SECONDS = 180;
     private static boolean isDevelopment;
 
+    void manageBuyOffer(String seed, String sellingAssetJson,
+                        String buyingAssetJson, String amount, String price, Long offerId,
+                        MethodChannel.Result result, boolean isDevelopmentStatus) {
+        isDevelopment = isDevelopmentStatus;
+        Asset selling = G.fromJson(sellingAssetJson, Asset.class);
+        Asset buying = G.fromJson(buyingAssetJson, Asset.class);
+        new StellarTask(seed,selling,buying,amount,price,offerId,result,true).execute();
+    }
+    void manageSellOffer(String seed, String sellingAssetJson, String buyingAssetJson, String amount, String price, Long offerId,
+                        MethodChannel.Result result, boolean isDevelopmentStatus) {
+        isDevelopment = isDevelopmentStatus;
+        Asset selling = G.fromJson(sellingAssetJson, Asset.class);
+        Asset buying = G.fromJson(buyingAssetJson, Asset.class);
+        new StellarTask(seed,selling,buying,amount,price,offerId,result,false).execute();
+    }
+    void allowTrust(String seed, String trustor, String assetCode, boolean authorize, MethodChannel.Result result, boolean isDevelopmentStatus) {
+        isDevelopment = isDevelopmentStatus;
+        new StellarTask(seed,trustor,assetCode,authorize,result).execute();
+    }
+    void changeTrust( String seed, String assetJson, String limit, MethodChannel.Result result, boolean isDevelopmentStatus) {
+        isDevelopment = isDevelopmentStatus;
+        Asset asset = G.fromJson(assetJson, Asset.class);
+        new StellarTask(seed,asset,limit,result).execute();
+    }
+    void mergeAccounts(String seed, String destinationAccount, MethodChannel.Result result, boolean isDevelopmentStatus) {
+        isDevelopment = isDevelopmentStatus;
+        new StellarTask(seed,destinationAccount,result).execute();
+    }
+    void setOptions( String seed, int clearFlags, int highThreshold, int lowThreshold,
+                     String inflationDestination, int masterKeyWeight, MethodChannel.Result result, boolean isDevelopmentStatus) {
+        isDevelopment = isDevelopmentStatus;
+        new StellarTask(seed,clearFlags,highThreshold,lowThreshold,inflationDestination,masterKeyWeight,result)
+        .execute();
+    }
+    void bumpSequence(String seed, Long bumpTo, MethodChannel.Result result, boolean isDevelopmentStatus) {
+        isDevelopment = isDevelopmentStatus;
+        new StellarTask(seed,bumpTo,result).execute();
+    }
+    void createPassiveOffer( String seed, String sellingAssetJson, String buyingAssetJson, 
+                             String amount, String price, MethodChannel.Result result, boolean isDevelopmentStatus) {
+        isDevelopment = isDevelopmentStatus;
+        Asset selling = G.fromJson(sellingAssetJson, Asset.class);
+        Asset buying = G.fromJson(buyingAssetJson, Asset.class);
+        new StellarTask(seed,selling,buying,amount,price,result).execute();
+    }
+    void manageData(  String seed, String name, String value, MethodChannel.Result result, boolean isDevelopmentStatus) {
+        isDevelopment = isDevelopmentStatus;
+        new StellarTask(seed,name,value,result).execute();
+    }
     void createAccount(boolean isDevelopmentStatus, MethodChannel.Result result) {
         LOGGER.info("\uD83E\uDD6C \uD83E\uDD6C \uD83E\uDD6C \uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08 " +
                 ".... Creating new Stellar account ..... " +
@@ -74,7 +122,6 @@ class StellarOperations {
         isDevelopment = isDevelopmentStatus;
         new StellarTask(seed, amount, destinationAccount, memo, result).execute();
     }
-
 
     void getPaymentsReceived(String accountId, boolean isDevelopmentStatus, MethodChannel.Result result) {
         isDevelopment = isDevelopmentStatus;
@@ -163,62 +210,70 @@ class StellarOperations {
             this.methodResult = methodResult;
         }
 
-        StellarTask( String seed, Asset selling, Asset buying, String amount, String price, Long offerId, boolean isBuyOffer) {
+        StellarTask( String seed, Asset selling, Asset buying, String amount, String price, Long offerId, MethodChannel.Result result, boolean isBuyOffer) {
             this.seed = seed;
             this.selling = selling;
             this.buying = buying;
             this.amount = amount;
             this.price = price;
             this.offerId = offerId;
+            this.methodResult = result;
             requestType = isBuyOffer? MANAGE_BUY_OFFER: MANAGE_SELL_OFFER;
         }
 
-        StellarTask(String seed, Asset selling, Asset buying, String amount, String price) {
+        StellarTask(String seed, Asset selling, Asset buying, String amount, String price, MethodChannel.Result result) {
             this.seed = seed;
             this.selling = selling;
             this.buying = buying;
             this.amount = amount;
             this.price = price;
+            this.methodResult = result;
             requestType = CREATE_PASSIVE_OFFER;
         }
         StellarTask(final String seed, int clearFlags, int highThreshold, int lowThreshold,
-                    String inflationDestination, int masterKeyWeight) {
+                    String inflationDestination, int masterKeyWeight, MethodChannel.Result result) {
             this.seed = seed;
             this.clearFlags = clearFlags;
             this.highThreshold = highThreshold;
             this.lowThreshold = lowThreshold;
             this.inflationDestination = inflationDestination;
             this.masterKeyWeight = masterKeyWeight;
+            this.methodResult = result;
             requestType = SET_OPTIONS;
         }
-        StellarTask(String seed, String trustor, String assetCode, boolean authorize) {
+        StellarTask(String seed, String trustor, String assetCode, boolean authorize, MethodChannel.Result result) {
             this.seed = seed;
             this.trustor = trustor;
             this.assetCode = assetCode;
             this.authorize = authorize;
+            this.methodResult = result;
             requestType = ALLOW_TRUST_OPERATION;
         }
-        StellarTask(String seed, Asset asset, String limit) {
+        StellarTask(String seed, Asset asset, String limit, MethodChannel.Result result) {
             this.seed = seed;
             this.asset = asset;
             this.limit = limit;
+            this.methodResult = result;
             requestType = CHANGE_TRUST_OPERATION;
         }
 
-        StellarTask(String seed, String destinationAccount) {
+        StellarTask(String seed, String destinationAccount, MethodChannel.Result result) {
             this.seed = seed;
             this.destinationAccount = destinationAccount;
+            this.methodResult = result;
             requestType = MERGE_ACCOUNTS;
         }
-        StellarTask(String seed, String name, String value) {
+        StellarTask(String seed, String name, String value, MethodChannel.Result result) {
             this.seed = seed;
             this.name = name;
             this.value = value;
+            this.methodResult = result;
             requestType = MANAGE_DATA;
         }
-        StellarTask(String seed, Long bumpTo) {
+        StellarTask(String seed, Long bumpTo, MethodChannel.Result result) {
             this.seed = seed;
             this.bumpTo = bumpTo;
+            this.methodResult = result;
             requestType = BUMP_SEQUENCE;
         }
 
@@ -358,11 +413,11 @@ class StellarOperations {
             } else {
                 network = Network.PUBLIC;
             }
-            KeyPair source = KeyPair.fromSecretSeed(seed);
-            KeyPair destination = KeyPair.fromAccountId(destinationAccount);
+            KeyPair sourceKeyPair = KeyPair.fromSecretSeed(seed);
+            KeyPair destinationKeyPair = KeyPair.fromAccountId(destinationAccount);
 
-            AccountResponse destAccount = server.accounts().account(destination.getAccountId());
-            AccountResponse sourceAccount = server.accounts().account(source.getAccountId());
+            AccountResponse destAccount = server.accounts().account(destinationKeyPair.getAccountId());
+            AccountResponse sourceAccount = server.accounts().account(sourceKeyPair.getAccountId());
 
             Transaction transaction = new Transaction.Builder(sourceAccount, network)
                     .addOperation(new PaymentOperation.Builder(destAccount.getAccountId(),
@@ -372,7 +427,7 @@ class StellarOperations {
                     .setOperationFee(100)
                     .build();
             try {
-                transaction.sign(source);
+                transaction.sign(sourceKeyPair);
                 SubmitTransactionResponse response = server.submitTransaction(transaction);
                 LOGGER.info("SubmitTransactionResponse: \uD83D\uDC99 Success? : " + response.isSuccess() + " \uD83D\uDC99 ");
                 LOGGER.info(G.toJson(response));
@@ -388,8 +443,8 @@ class StellarOperations {
         List<PaymentOperationResponse> getPaymentsReceived(final String seed) throws Exception {
             setServerAndNetwork(isDevelopment);
 
-            final KeyPair account = KeyPair.fromSecretSeed(seed);
-            PaymentsRequestBuilder paymentsRequest = server.payments().forAccount(account.getAccountId());
+            final KeyPair keyPair = KeyPair.fromSecretSeed(seed);
+            PaymentsRequestBuilder paymentsRequest = server.payments().forAccount(keyPair.getAccountId());
             final List<PaymentOperationResponse> paymentOperationResponses = new ArrayList<>();
             try {
                 Page<OperationResponse> responsePage = paymentsRequest
@@ -398,11 +453,11 @@ class StellarOperations {
                 List<OperationResponse> responses = responsePage.getRecords();
                 for (OperationResponse operationResponse : responses) {
                     if (operationResponse instanceof PaymentOperationResponse) {
-                        if (((PaymentOperationResponse) operationResponse).getTo().equals(account.getAccountId())) {
+                        if (((PaymentOperationResponse) operationResponse).getTo().equals(keyPair.getAccountId())) {
                             PaymentOperationResponse paymentOperationResponse = (PaymentOperationResponse) operationResponse;
                             paymentOperationResponses.add(paymentOperationResponse);
                             Log.d(TAG, "Payment made: " + paymentOperationResponse.getAmount()
-                                    + " for account: " + accountId);
+                                    + " for keyPair: " + accountId);
                         }
 
                     }
@@ -746,6 +801,56 @@ class StellarOperations {
                         Log.e(TAG, msg5, (Exception) result);
                         returnError("105", msg5, "", methodResult);
                         break;
+                    case MANAGE_BUY_OFFER:
+                        String msg6 = "ManageBuyOffer Failed";
+                        Log.e(TAG, msg6, (Exception) result);
+                        returnError("106", msg6, "", methodResult);
+                        break;
+                    case MANAGE_SELL_OFFER:
+                        String msg7 = "ManageSellOffer Failed";
+                        Log.e(TAG, msg7, (Exception) result);
+                        returnError("107", msg7, "", methodResult);
+                        break;
+                    case ALLOW_TRUST_OPERATION:
+                        String msg8 = "ALLOW_TRUST_OPERATION Failed";
+                        Log.e(TAG, msg8, (Exception) result);
+                        returnError("108", msg8, "", methodResult);
+                        break;
+                    case CHANGE_TRUST_OPERATION:
+                        String msg9 = "CHANGE_TRUST_OPERATION Failed";
+                        Log.e(TAG, msg9, (Exception) result);
+                        returnError("109", msg9, "", methodResult);
+                        break;
+                    case MANAGE_DATA:
+                        String msg10 = "ManageData Failed";
+                        Log.e(TAG, msg10, (Exception) result);
+                        returnError("110", msg10, "", methodResult);
+                        break;
+                    case BUMP_SEQUENCE:
+                        String msg11 = "BumpSequence Failed";
+                        Log.e(TAG, msg11, (Exception) result);
+                        returnError("111", msg11, "", methodResult);
+                        break;
+                    case CREATE_PASSIVE_OFFER:
+                        String msg12 = "CREATE_PASSIVE_OFFER Failed";
+                        Log.e(TAG, msg12, (Exception) result);
+                        returnError("112", msg12, "", methodResult);
+                        break;
+                    case SET_OPTIONS:
+                        String msg13 = "SET_OPTIONS Failed";
+                        Log.e(TAG, msg13, (Exception) result);
+                        returnError("113", msg13, "", methodResult);
+                        break;
+                    case MERGE_ACCOUNTS:
+                        String msg14 = "MERGE_ACCOUNTS Failed";
+                        Log.e(TAG, msg14, (Exception) result);
+                        returnError("114", msg14, "", methodResult);
+                        break;
+                    default:
+                        String msg15 = "UNKNOWN transaction Failed";
+                        Log.e(TAG, msg15, (Exception) result);
+                        returnError("115", msg15, "", methodResult);
+                        break;
                 }
             } else {
                 switch (requestType) {
@@ -756,7 +861,16 @@ class StellarOperations {
                         returnAccountResponse(accountResponse, methodResult);
                         break;
                     case SEND_PAYMENT:
-                        returnPaymentResponse(submitTransactionResponse, methodResult);
+                    case MANAGE_SELL_OFFER:
+                    case ALLOW_TRUST_OPERATION:
+                    case CHANGE_TRUST_OPERATION:
+                    case MANAGE_DATA:
+                    case CREATE_PASSIVE_OFFER:
+                    case BUMP_SEQUENCE:
+                    case SET_OPTIONS:
+                    case MERGE_ACCOUNTS:
+                    case MANAGE_BUY_OFFER:
+                        returnTransactionResponse(submitTransactionResponse, methodResult);
                         break;
                     case GET_PAYMENTS_MADE:
                     case GET_PAYMENTS_RECEIVED:
@@ -789,7 +903,8 @@ class StellarOperations {
         });
     }
 
-    static private void returnPaymentResponse(final SubmitTransactionResponse transactionResponse, final MethodChannel.Result result) {
+    static private void returnTransactionResponse(final SubmitTransactionResponse transactionResponse,
+                                                  final MethodChannel.Result result) {
         uiThreadHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -798,7 +913,8 @@ class StellarOperations {
         });
     }
 
-    static private void returnPayments(final List<PaymentOperationResponse> accountResponse, final MethodChannel.Result result) {
+    static private void returnPayments(final List<PaymentOperationResponse> accountResponse,
+                                       final MethodChannel.Result result) {
         uiThreadHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -807,11 +923,12 @@ class StellarOperations {
         });
     }
 
-    static private void returnError(final String code, final String message, final String reason, final MethodChannel.Result result) {
+    static private void returnError(final String code, final String message, final String reason,
+                                    final MethodChannel.Result result) {
         uiThreadHandler.post(new Runnable() {
             @Override
             public void run() {
-                result.error(code, message, reason);
+                result.error(code, message, "reason: " + reason);
             }
         });
     }

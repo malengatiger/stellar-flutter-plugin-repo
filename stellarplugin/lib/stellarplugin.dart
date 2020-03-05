@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:stellarplugin/data_models/payment_response.dart';
 
 import 'data_models/account_response_bag.dart';
+import 'data_models/trabsaction_response.dart';
 
 class Stellar {
   static const MethodChannel _channel = const MethodChannel('stellarplugin');
@@ -29,7 +30,7 @@ class Stellar {
     return result;
   }
 
-  static Future sendPayment(
+  static Future<SubmitTransactionResponse> sendPayment(
       {@required String seed,
       @required String destinationAccount,
       @required String amount,
@@ -55,38 +56,43 @@ class Stellar {
     } catch (e) {
       print(e);
     }
-    return paymentResponse;
+    return SubmitTransactionResponse.fromJson(mJson);
   }
 
-  static Future<List<PaymentResponse>> getPaymentsReceived(
-      {@required String accountId, bool isDevelopmentStatus = true}) async {
-    final payments = await _channel.invokeMethod('getPaymentsReceived', {
+  static Future<List<PaymentOperationResponse>> getPaymentsReceived(
+      {@required String seed, bool isDevelopmentStatus = true}) async {
+    final pString = await _channel.invokeMethod('getPaymentsReceived', {
       "isDevelopmentStatus": '$isDevelopmentStatus',
-      "accountId": '$accountId',
+      "seed": '$seed',
     });
-    print('Stellar:  🔵 🔵 🔵 getPaymentsReceived: string result: ' + payments);
-    return _getPaymentList(payments);
-  }
-
-  static Future<List<PaymentResponse>> getPaymentsMade(
-      {@required String accountId, isDevelopmentStatus = true}) async {
-    final payments = await _channel.invokeMethod('getPaymentsMade', {
-      "isDevelopmentStatus": '$isDevelopmentStatus',
-      "accountId": '$accountId',
+    print('Stellar:  🔵 🔵 🔵 getPaymentsReceived: string result: $pString');
+    List payments = jsonDecode(pString);
+    List<PaymentOperationResponse> mList = List();
+    payments.forEach((p) {
+      var mm = PaymentOperationResponse.fromJson(p);
+      mList.add(mm);
     });
-    print('Stellar:  🔵 🔵 🔵 getPaymentsMade: string result: ' + payments);
-    List<PaymentResponse> mList = _getPaymentList(payments);
+    print(
+        'Stellar:  🔵 🔵 🔵 getPaymentsReceived: payments found: 🔵 ${mList.length}');
     return mList;
   }
 
-  static List<PaymentResponse> _getPaymentList(payments) {
-    var mList = List<PaymentResponse>();
-    List respList = jsonDecode(payments);
-    respList.forEach((r) {
-      mList.add(PaymentResponse.fromJson(r));
+  static Future<List<PaymentOperationResponse>> getPaymentsMade(
+      {@required String seed, isDevelopmentStatus = true}) async {
+    String pString = await _channel.invokeMethod('getPaymentsMade', {
+      "isDevelopmentStatus": '$isDevelopmentStatus',
+      "seed": '$seed',
     });
     print(
-        'Stellar:  🔵 🔵 🔵 getPaymentsMade: 💜 ${mList.length} 💜 payment response objects returned');
+        'Stellar:   🔴  🔴  🔴  getPaymentsMade: string result ...... $pString');
+    List payments = jsonDecode(pString);
+    List<PaymentOperationResponse> mList = List();
+    payments.forEach((p) {
+      var mm = PaymentOperationResponse.fromJson(p);
+      mList.add(mm);
+    });
+    print(
+        'Stellar:  🔴  🔴  🔴  getPaymentsMade: payments found:  🔴 ${mList.length}');
     return mList;
   }
 
