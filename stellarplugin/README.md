@@ -28,4 +28,17 @@ List<PaymentOperationResponse> paymentsReceived0 = await Stellar.getPaymentsRece
 ~~~~
 isDevelopmentStatus is a boolean flag to help the plugin connect to either the Testnet and the public Stellar network. This code creates a Stellar account and , if isDevelopmentStatus is true FriendBot is politely asked for 10,000 test XLM (lumens).
 
-## 
+## Stellar Transaction Operations supported:
+
+- CreateAccount 
+- SendPayment 
+- GetAccount
+- SetOptions
+- ManageBuyOffer
+- ManageSellOffer
+- CreatePassiveOffer
+- AllowTrust
+- ChangeTrust
+- MergeAccounts
+- BumpSequence
+- ManageData
