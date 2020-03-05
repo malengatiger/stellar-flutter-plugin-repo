@@ -11,19 +11,22 @@ import 'package:stellarplugin/data_models/account_response_bag.dart';
 import 'package:stellarplugin/data_models/payment_response.dart';
 import 'package:stellarplugin/stellarplugin.dart';
 
-var accountResponse = await Stellar.createAccount(isDevelopmentStatus: true);
+AccountResponseBag accountResponseBag = await Stellar.createAccount(isDevelopmentStatus: true);
 
-var response = await Stellar.sendPayment(
+PaymentOperationResponse response = await Stellar.sendPayment(
           seed: seed,
           destinationAccount: destinationAccount,
           amount: amount,
           memo: memo,
           isDevelopmentStatus: true);
 
-List<PaymentOperationResponse> paymentsReceived0 = await Stellar.getPaymentsReceived(
+List<PaymentOperationResponse> paymentsReceived = await Stellar.getPaymentsReceived(
           seed: "secretSeed here");
 
- var acct = await Stellar.getAccount(
+List<PaymentOperationResponse> paymentsMade = await Stellar.getPaymentsMade(
+          seed: "secretSeed here");
+
+ AccountResponse acct = await Stellar.getAccount(
           seed: "secretSeed here");
 ~~~~
 isDevelopmentStatus is a boolean flag to help the plugin connect to either the Testnet and the public Stellar network. This code creates a Stellar account and , if isDevelopmentStatus is true FriendBot is politely asked for 10,000 test XLM (lumens).
