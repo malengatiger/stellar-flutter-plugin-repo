@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:stellarplugin/data_models/account_response.dart';
 import 'package:stellarplugin/data_models/payment_response.dart';
 
 import 'data_models/account_response_bag.dart';
@@ -96,13 +97,14 @@ class Stellar {
     return mList;
   }
 
-  static Future getAccount(
+  static Future<AccountResponse> getAccount(
       {@required String seed, bool isDevelopmentStatus = true}) async {
-    final accountResponse = await _channel.invokeMethod('getAccount', {
+    final pString = await _channel.invokeMethod('getAccount', {
       "isDevelopmentStatus": '$isDevelopmentStatus',
       "seed": '$seed',
     });
-    print('Stellar:  🔵 🔵 🔵 getAccount: ' + accountResponse);
-    return accountResponse;
+    var resp = AccountResponse.fromJson(jsonDecode(pString));
+    print('Stellar:  🔵 🔵 🔵 getAccount: ${resp.accountId}');
+    return resp;
   }
 }
