@@ -21,6 +21,7 @@ class _HomeState extends State<Home> {
   var paymentsMade0 = List<PaymentOperationResponse>();
   var paymentsMade1 = List<PaymentOperationResponse>();
   List<AccountResponseBag> accountResponses = List();
+  var defaultAmount = "100";
   Future _createAccount() async {
     print('🔆 🔆 🔆 🔆 🔆 🔆 🔆 🔆  _createAccounts starting .....');
     try {
@@ -77,7 +78,7 @@ class _HomeState extends State<Home> {
       return;
     }
     var seed = accountResponses.elementAt(0).secretSeed;
-    var amount = "1230.09";
+    var amount = defaultAmount;
     var memo = "Tx from Flutter";
     var destinationAccount =
         accountResponses.elementAt(1).accountResponse.accountId;
@@ -240,7 +241,7 @@ class _HomeState extends State<Home> {
     return Scaffold(
       key: _key,
       appBar: AppBar(
-        title: Text('Stellar Flutter Plugin'),
+        title: Text('Stellar Flutter Plugin Example'),
         backgroundColor: Colors.pink[300],
         actions: <Widget>[],
         bottom: PreferredSize(
@@ -404,8 +405,15 @@ class _HomeState extends State<Home> {
                     height: 12,
                   ),
                   Text(
-                    'Tap totals to see more account details ...',
+                    'Tap the totals to see more account details ...',
                     style: TextStyle(color: Colors.white),
+                  ),
+                  SizedBox(
+                    height: 12,
+                  ),
+                  Text(
+                    'Payments are $defaultAmount XLM at a time',
+                    style: TextStyle(color: Colors.black),
                   ),
                   SizedBox(
                     height: 20,
@@ -413,8 +421,9 @@ class _HomeState extends State<Home> {
                 ],
               ),
             ),
-            preferredSize: Size.fromHeight(280)),
+            preferredSize: Size.fromHeight(300)),
       ),
+      backgroundColor: Colors.brown[100],
       body: isBusy
           ? Center(
               child: CircularProgressIndicator(
