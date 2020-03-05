@@ -1,10 +1,11 @@
+import 'dart:html';
+
 import 'package:flutter/material.dart';
 import 'package:stellarplugin/data_models/account_response.dart';
-import 'package:stellarplugin/data_models/payment_response.dart';
 
 class AccountDetails extends StatelessWidget {
-  final List<SubmitTransactionResponse> paymentsReceived;
-  final List<SubmitTransactionResponse> paymentsMade;
+  final List<PaymentResponse> paymentsReceived;
+  final List<PaymentResponse> paymentsMade;
   final AccountResponse accountResponse;
 
   AccountDetails(

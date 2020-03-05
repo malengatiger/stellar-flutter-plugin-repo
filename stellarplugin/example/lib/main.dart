@@ -70,6 +70,14 @@ class _MyAppState extends State<MyApp> {
               TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo[500]),
         ));
       });
+      var snackBar = SnackBar(
+        content: Text(
+          'Account has been created',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.black,
+      );
+      _key.currentState.showSnackBar(snackBar);
     } on PlatformException catch (e) {
       print('🔴 🔴 🔴 We have a Plugin problem');
       setState(() {
@@ -87,10 +95,18 @@ class _MyAppState extends State<MyApp> {
     if (accountResponses.length < 2) {
       print(
           '🔆 🔆 🔆 🔆 Please create at least 2 accounts for this (payment tranx) to work');
+      var snackBar = SnackBar(
+        content: Text(
+          'Please create at least 2 accounts',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.red[700],
+      );
+      _key.currentState.showSnackBar(snackBar);
       return;
     }
     var seed = accountResponses.elementAt(0).secretSeed;
-    var amount = "12.56";
+    var amount = "50.08";
     var memo = "Tx from Flutter";
     var destinationAccount =
         accountResponses.elementAt(1).accountResponse.accountId;
@@ -106,22 +122,38 @@ class _MyAppState extends State<MyApp> {
           isDevelopmentStatus: true);
       print(
           '_MyAppState: _sendPayment: 🥬 🥬 🥬 🥬  Payment executed; json from object: ${response.toJson()}  🍎  🍎 ');
-      _getAccount();
-      _getPaymentsReceived();
-      _getPaymentsMade();
+      await _getAccount();
+      await _getPaymentsReceived();
+      await _getPaymentsMade();
       setState(() {
         isBusy = false;
       });
+      var snackBar = SnackBar(
+        content: Text(
+          'Payment has been sent',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.indigo[700],
+      );
+      _key.currentState.showSnackBar(snackBar);
     } on PlatformException catch (e) {
       print('🔴 🔴 We have a Plugin problem: 🔴 $e');
     }
   }
 
   bool isBusy = false;
-  _getPaymentsReceived() async {
+  Future _getPaymentsReceived() async {
     if (accountResponses.length < 2) {
       print(
           '🔆 🔆 🔆 🔆 Please create at least 2 accounts for this (_getPaymentsReceived tranx) to work');
+      var snackBar = SnackBar(
+        content: Text(
+          'Please create at least 2 accounts',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.red[700],
+      );
+      _key.currentState.showSnackBar(snackBar);
       return;
     }
     try {
@@ -140,6 +172,14 @@ class _MyAppState extends State<MyApp> {
       setState(() {
         isBusy = false;
       });
+      var snackBar = SnackBar(
+        content: Text(
+          'Payments Received: Acct1: ${paymentsReceived0.length} Acct2: ${paymentsReceived1.length}',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.teal[700],
+      );
+      _key.currentState.showSnackBar(snackBar);
     } on PlatformException catch (e) {
       print('We have a Plugin problem: $e');
     }
@@ -149,10 +189,18 @@ class _MyAppState extends State<MyApp> {
   var paymentsReceived1 = List<PaymentOperationResponse>();
   var paymentsMade0 = List<PaymentOperationResponse>();
   var paymentsMade1 = List<PaymentOperationResponse>();
-  _getPaymentsMade() async {
+  Future _getPaymentsMade() async {
     if (accountResponses.length < 2) {
       print(
           '🔆 🔆 🔆 🔆 Please create at least 2 accounts for this (_getPaymentsMade tranx) to work');
+      var snackBar = SnackBar(
+        content: Text(
+          'Please create at least 2 accounts',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.red[700],
+      );
+      _key.currentState.showSnackBar(snackBar);
       return;
     }
     try {
@@ -170,16 +218,32 @@ class _MyAppState extends State<MyApp> {
       setState(() {
         isBusy = false;
       });
+      var snackBar = SnackBar(
+        content: Text(
+          'Payments Made: Acct1: ${paymentsMade0.length} Acct2: ${paymentsMade1.length}',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.pink[700],
+      );
+      _key.currentState.showSnackBar(snackBar);
     } on PlatformException catch (e) {
       print('We have a Plugin problem: $e');
     }
   }
 
-  _getAccount() async {
+  Future _getAccount() async {
     print(
         '_MyAppState: _getAccount: 🥬 🥬 🥬 🥬  .... getting Account from Stellar  🍎  🍎 ');
     if (accountResponses.isEmpty) {
       print('You need at least 1 account created for this to work 🔆 🔆 🔆 🔆');
+      var snackBar = SnackBar(
+        content: Text(
+          'You need at least 1 account created for this to work',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.red[700],
+      );
+      _key.currentState.showSnackBar(snackBar);
     }
     try {
       setState(() {
@@ -195,6 +259,11 @@ class _MyAppState extends State<MyApp> {
       setState(() {
         isBusy = false;
       });
+      var snackBar = SnackBar(
+          content:
+              Text('Account Retrieved: accountId: ${response.accountId} '));
+      _key.currentState.showSnackBar(snackBar);
+      _key.currentState.showSnackBar(snackBar);
     } on PlatformException {
       print('We have a Plugin problem');
     }
@@ -216,7 +285,7 @@ class _MyAppState extends State<MyApp> {
           actions: <Widget>[],
           bottom: PreferredSize(
               child: Padding(
-                padding: const EdgeInsets.all(20.0),
+                padding: const EdgeInsets.all(12.0),
                 child: Column(
                   children: <Widget>[
                     Text(
@@ -234,9 +303,9 @@ class _MyAppState extends State<MyApp> {
                           width: 12,
                         ),
                         Text(
-                          '5',
+                          '13',
                           style: TextStyle(
-                              fontSize: 30,
+                              fontSize: 24,
                               color: Colors.white,
                               fontWeight: FontWeight.w900),
                         ),
@@ -255,7 +324,7 @@ class _MyAppState extends State<MyApp> {
                         Text(
                           '${accountResponses.length}',
                           style: TextStyle(
-                              fontSize: 30,
+                              fontSize: 24,
                               color: Colors.white,
                               fontWeight: FontWeight.w900),
                         ),
@@ -269,12 +338,30 @@ class _MyAppState extends State<MyApp> {
                       children: <Widget>[
                         Text('Payments Received'),
                         SizedBox(
-                          width: 12,
+                          width: 4,
+                        ),
+                        Text('Account 1'),
+                        SizedBox(
+                          width: 8,
                         ),
                         Text(
                           '${paymentsReceived0.length}',
                           style: TextStyle(
-                              fontSize: 30,
+                              fontSize: 24,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900),
+                        ),
+                        SizedBox(
+                          width: 8,
+                        ),
+                        Text('Account 2'),
+                        SizedBox(
+                          width: 8,
+                        ),
+                        Text(
+                          '${paymentsReceived1.length}',
+                          style: TextStyle(
+                              fontSize: 24,
                               color: Colors.white,
                               fontWeight: FontWeight.w900),
                         ),
@@ -290,22 +377,40 @@ class _MyAppState extends State<MyApp> {
                         SizedBox(
                           width: 12,
                         ),
+                        Text('Account 1'),
+                        SizedBox(
+                          width: 8,
+                        ),
                         Text(
                           '${paymentsMade0.length}',
                           style: TextStyle(
-                              fontSize: 30,
+                              fontSize: 24,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900),
+                        ),
+                        SizedBox(
+                          width: 8,
+                        ),
+                        Text('Account 2'),
+                        SizedBox(
+                          width: 8,
+                        ),
+                        Text(
+                          '${paymentsMade1.length}',
+                          style: TextStyle(
+                              fontSize: 24,
                               color: Colors.white,
                               fontWeight: FontWeight.w900),
                         ),
                       ],
                     ),
                     SizedBox(
-                      height: 8,
+                      height: 28,
                     ),
                   ],
                 ),
               ),
-              preferredSize: Size.fromHeight(260)),
+              preferredSize: Size.fromHeight(240)),
         ),
         backgroundColor: Colors.brown[100],
         body: isBusy
