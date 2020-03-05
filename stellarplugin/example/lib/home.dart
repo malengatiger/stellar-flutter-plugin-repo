@@ -132,8 +132,9 @@ class _HomeState extends State<Home> {
         isBusy = true;
       });
 
-      paymentsReceived0 = await Stellar.getPaymentsReceived(
-          seed: accountResponses.elementAt(0).secretSeed);
+      List<PaymentOperationResponse> paymentsReceived0 =
+          await Stellar.getPaymentsReceived(
+              seed: accountResponses.elementAt(0).secretSeed);
       print(
           '_MyAppState: _getPaymentsReceived: 🥬 🥬 🥬 🥬 👺   Payments received, account #1: ${paymentsReceived0.length}  🍎 🍎 ');
       paymentsReceived1 = await Stellar.getPaymentsReceived(
