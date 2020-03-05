@@ -13,7 +13,8 @@ Goals: What your project plans to accomplish broken down by objectives.
 Timeline: How and when you will accomplish your goals.
 
 Description: The description should answer questions like “what does your project enable users to do?” “Why is your project valuable for Stellar?” and “Wow does your project use Stellar?” It should also cover what platforms the project supports (ex; Windows, Chrome, etc.) and relevant documentation. This section should be very detailed.
-
+GitHub repository: https://github.com/malengatiger/stellar-flutter-plugin-repo/tree/master/stellarplugin
+Flutter: https://flutter.dev/
 Links: Links to your application, code repository, supporting materials, and/or home site. If you are submitting a proposal for content pieces (like walkthroughs), please provide links to the content pieces.
 
 Tags: Tag your project. Examples can be “sdk, javascript, party, game, book”
