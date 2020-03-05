@@ -53,12 +53,16 @@ class _MyAppState extends State<MyApp> {
   _createAccount() async {
     print('🔆 🔆 🔆 🔆 🔆 🔆 🔆 🔆  _createAccounts starting .....');
     try {
+      setState(() {
+        isBusy = true;
+      });
       var accountResponse =
           await Stellar.createAccount(isDevelopmentStatus: true);
       accountResponses.add(accountResponse);
       print('_MyAppState:  🥬 🥬 🥬 🥬  _createAccounts: 🥬 🥬 🥬 🥬  '
           'Account created by Stellar returned: 🍎 Accounts: ${accountResponses.length} 🍎');
       setState(() {
+        isBusy = false;
         widgets.add(Text(
           "🍎 🍎 🍎 🍎 Account has been created with balances: ${accountResponse.accountResponse.balances.length} 🍎"
           " Balance: ${accountResponse.accountResponse.balances.first.balance} ${accountResponse.accountResponse.balances.first.assetType} ",
@@ -69,6 +73,7 @@ class _MyAppState extends State<MyApp> {
     } on PlatformException catch (e) {
       print('🔴 🔴 🔴 We have a Plugin problem');
       setState(() {
+        isBusy = false;
         widgets.add(Text(
           "🔴 We have a problem ... $e",
           style:
@@ -85,11 +90,14 @@ class _MyAppState extends State<MyApp> {
       return;
     }
     var seed = accountResponses.elementAt(0).secretSeed;
-    var amount = "900";
+    var amount = "1200";
     var memo = "Tx from Flutter";
     var destinationAccount =
         accountResponses.elementAt(1).accountResponse.accountId;
     try {
+      setState(() {
+        isBusy = true;
+      });
       var response = await Stellar.sendPayment(
           seed: seed,
           destinationAccount: destinationAccount,
@@ -104,11 +112,15 @@ class _MyAppState extends State<MyApp> {
       _getAccount();
       _getPaymentsReceived();
       _getPaymentsMade();
+      setState(() {
+        isBusy = false;
+      });
     } on PlatformException catch (e) {
       print('🔴 🔴 We have a Plugin problem: 🔴 $e');
     }
   }
 
+  bool isBusy = false;
   _getPaymentsReceived() async {
     if (accountResponses.length < 2) {
       print(
@@ -116,6 +128,9 @@ class _MyAppState extends State<MyApp> {
       return;
     }
     try {
+      setState(() {
+        isBusy = true;
+      });
       paymentsReceived = await Stellar.getPaymentsReceived(
           accountId: accountResponses.elementAt(1).accountResponse.accountId);
       print(
@@ -124,7 +139,9 @@ class _MyAppState extends State<MyApp> {
           accountId: accountResponses.elementAt(0).accountResponse.accountId);
       print(
           '_MyAppState: _getPaymentsReceived: 🥬 🥬 🥬 🥬 👺   Payments received, account #1: ${paymentsReceived1.length}  🍎 🍎 ');
-      setState(() {});
+      setState(() {
+        isBusy = false;
+      });
     } on PlatformException catch (e) {
       print('We have a Plugin problem: $e');
     }
@@ -139,6 +156,9 @@ class _MyAppState extends State<MyApp> {
       return;
     }
     try {
+      setState(() {
+        isBusy = true;
+      });
       paymentsMade = await Stellar.getPaymentsMade(
           accountId: accountResponses.first.accountResponse.accountId);
       print(
@@ -147,7 +167,9 @@ class _MyAppState extends State<MyApp> {
           accountId: accountResponses.elementAt(1).accountResponse.accountId);
       print(
           '_MyAppState: _getPaymentsMade: 💙💙 💙💙 💙💙 💙💙    Payments made (account #2): ${paymentsMade1.length}  🍎  🍎 💙💙 💙💙 💙💙 ');
-      setState(() {});
+      setState(() {
+        isBusy = false;
+      });
     } on PlatformException catch (e) {
       print('We have a Plugin problem: $e');
     }
@@ -160,6 +182,9 @@ class _MyAppState extends State<MyApp> {
       print('You need at least 1 account created for this to work 🔆 🔆 🔆 🔆');
     }
     try {
+      setState(() {
+        isBusy = true;
+      });
       var acct = await Stellar.getAccount(
           seed: accountResponses.elementAt(0).secretSeed);
       var mJson = jsonDecode(acct);
@@ -167,6 +192,9 @@ class _MyAppState extends State<MyApp> {
       print(
           '_MyAppState: _getAccount: 🥬 🥬 🥬 🥬  Account retrieved: ${response.accountId}  🍎 '
           'balance: ${response.balances.first.balance} ${response.balances.first.assetType} 🍎 ');
+      setState(() {
+        isBusy = false;
+      });
     } on PlatformException {
       print('We have a Plugin problem');
     }
@@ -279,121 +307,127 @@ class _MyAppState extends State<MyApp> {
               preferredSize: Size.fromHeight(240)),
         ),
         backgroundColor: Colors.brown[100],
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: <Widget>[
-                SizedBox(
-                  height: 16,
+        body: isBusy
+            ? Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 4,
                 ),
-                Container(
-                  width: 360,
-                  child: RaisedButton(
-                    elevation: 4,
-                    color: Colors.teal[700],
-                    onPressed: _createAccount,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        'Create Account',
-                        style: TextStyle(color: Colors.white),
+              )
+            : SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: <Widget>[
+                      SizedBox(
+                        height: 16,
                       ),
-                    ),
+                      Container(
+                        width: 360,
+                        child: RaisedButton(
+                          elevation: 4,
+                          color: Colors.teal[700],
+                          onPressed: _createAccount,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Text(
+                              'Create Account',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 16,
+                      ),
+                      Container(
+                        width: 360,
+                        child: RaisedButton(
+                          elevation: 4,
+                          color: Colors.teal[500],
+                          onPressed: _getAccount,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Text(
+                              'Retrieve Account',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 16,
+                      ),
+                      Container(
+                        width: 360,
+                        child: RaisedButton(
+                          elevation: 4,
+                          color: Colors.blue[700],
+                          onPressed: _sendPayment,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Text(
+                              'Send Payment',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 16,
+                      ),
+                      Container(
+                        width: 360,
+                        child: RaisedButton(
+                          elevation: 4,
+                          color: Colors.pink[700],
+                          onPressed: _getPaymentsMade,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Text(
+                              'Get Payments Made',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 16,
+                      ),
+                      Container(
+                        width: 360,
+                        child: RaisedButton(
+                          elevation: 4,
+                          color: Colors.indigo[700],
+                          onPressed: _getPaymentsReceived,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Text(
+                              'Get Payments Received',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Card(
+                        elevation: 2,
+                        color: Colors.grey[300],
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            width: double.infinity,
+                            child: Column(
+                              children: widgets,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(
-                  height: 16,
-                ),
-                Container(
-                  width: 360,
-                  child: RaisedButton(
-                    elevation: 4,
-                    color: Colors.teal[500],
-                    onPressed: _getAccount,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        'Retrieve Account',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: 16,
-                ),
-                Container(
-                  width: 360,
-                  child: RaisedButton(
-                    elevation: 4,
-                    color: Colors.blue[700],
-                    onPressed: _sendPayment,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        'Send Payment',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: 16,
-                ),
-                Container(
-                  width: 360,
-                  child: RaisedButton(
-                    elevation: 4,
-                    color: Colors.pink[700],
-                    onPressed: _getPaymentsMade,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        'Get Payments Made',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: 16,
-                ),
-                Container(
-                  width: 360,
-                  child: RaisedButton(
-                    elevation: 4,
-                    color: Colors.indigo[700],
-                    onPressed: _getPaymentsReceived,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        'Get Payments Received',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Card(
-                  elevation: 2,
-                  color: Colors.grey[300],
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      width: double.infinity,
-                      child: Column(
-                        children: widgets,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+              ),
       ),
     );
   }
