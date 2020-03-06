@@ -276,7 +276,7 @@ class StellarOperations {
             this.methodResult = result;
             requestType = BUMP_SEQUENCE;
         }
-        
+
         @Override
         protected Object doInBackground(Void... voids) {
             Log.d(TAG, "\uD83C\uDF4E doInBackground \uD83C\uDF4E doInBackground " +
