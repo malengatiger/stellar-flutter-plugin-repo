@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:stellarplugin/data_models/account_response_bag.dart';
 import 'package:stellarplugin/data_models/payment_response.dart';
 import 'package:stellarplugin/stellarplugin.dart';
@@ -20,7 +21,8 @@ class _HomeState extends State<Home> {
   var paymentsReceived1 = List<PaymentOperationResponse>();
   var paymentsMade0 = List<PaymentOperationResponse>();
   var paymentsMade1 = List<PaymentOperationResponse>();
-  List<AccountResponseBag> accountResponses = List();
+  var accountResponses = List<AccountResponseBag>();
+
   var defaultAmount = "100";
   Future _createAccount() async {
     print('🔆 🔆 🔆 🔆 🔆 🔆 🔆 🔆  _createAccounts starting .....');
@@ -35,11 +37,15 @@ class _HomeState extends State<Home> {
           'Account created by Stellar returned: 🍎 Accounts: ${accountResponses.length} 🍎');
       setState(() {
         isBusy = false;
-        widgets.add(Text(
-          "🍎 🍎 🍎 🍎 Account has been created with balances: ${accountResponse.accountResponse.balances.length} 🍎"
-          " Balance: ${accountResponse.accountResponse.balances.first.balance} ${accountResponse.accountResponse.balances.first.assetType} ",
-          style:
-              TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo[500]),
+        widgets.add(Row(
+          children: <Widget>[
+            Text('Account created. Balance:'),
+            Text(
+              "${getFormattedAmount(accountResponse.accountResponse.balances.first.balance, context)} XLM ",
+              style:
+                  TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+            ),
+          ],
         ));
       });
       var snackBar = SnackBar(
@@ -94,6 +100,11 @@ class _HomeState extends State<Home> {
           isDevelopmentStatus: true);
       print(
           '_MyAppState: _sendPayment: 🥬 🥬 🥬 🥬  Payment executed; json from object: ${response.toJson()}  🍎  🍎 ');
+      widgets.add(Text(
+        "Payment of $defaultAmount has been made. Trx: ${response.hash} ",
+        style:
+            TextStyle(fontWeight: FontWeight.normal, color: Colors.pink[600]),
+      ));
       await _getAccount();
       await _getPaymentsReceived();
       await _getPaymentsMade();
@@ -141,6 +152,39 @@ class _HomeState extends State<Home> {
           seed: accountResponses.elementAt(1).secretSeed);
       print(
           '_MyAppState: _getPaymentsReceived: 🥬 🥬 🥬 🥬 👺  Payments received, account #2: ${paymentsReceived1.length}  🍎 🍎 ');
+      widgets.add(Row(
+        children: <Widget>[
+          Text(
+            "Payments received for Account #1 ",
+            style:
+                TextStyle(fontWeight: FontWeight.normal, color: Colors.black),
+          ),
+          SizedBox(
+            width: 8,
+          ),
+          Text(
+            "${paymentsReceived0.length}",
+            style:
+                TextStyle(fontWeight: FontWeight.bold, color: Colors.blue[600]),
+          ),
+        ],
+      ));
+      widgets.add(Row(
+        children: <Widget>[
+          Text(
+            "Payments received for Account #2 ",
+            style:
+                TextStyle(fontWeight: FontWeight.normal, color: Colors.black),
+          ),
+          SizedBox(
+            width: 8,
+          ),
+          Text(
+            "${paymentsReceived1.length}",
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+          ),
+        ],
+      ));
       setState(() {
         isBusy = false;
       });
@@ -183,6 +227,39 @@ class _HomeState extends State<Home> {
           seed: accountResponses.elementAt(1).secretSeed);
       print(
           '_MyAppState: _getPaymentsMade: 💙💙 💙💙 💙💙 💙💙    Payments made (account #2): ${paymentsMade1.length}  🍎  🍎 💙💙 💙💙 💙💙 ');
+      widgets.add(Row(
+        children: <Widget>[
+          Text(
+            "Payments made by Account #1 ",
+            style:
+                TextStyle(fontWeight: FontWeight.normal, color: Colors.black),
+          ),
+          SizedBox(
+            width: 8,
+          ),
+          Text(
+            "${paymentsMade0.length}",
+            style:
+                TextStyle(fontWeight: FontWeight.bold, color: Colors.blue[600]),
+          ),
+        ],
+      ));
+      widgets.add(Row(
+        children: <Widget>[
+          Text(
+            "Payments made by Account #2 ",
+            style:
+                TextStyle(fontWeight: FontWeight.normal, color: Colors.black),
+          ),
+          SizedBox(
+            width: 8,
+          ),
+          Text(
+            "${paymentsMade1.length}",
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+          ),
+        ],
+      ));
       setState(() {
         isBusy = false;
       });
@@ -217,18 +294,34 @@ class _HomeState extends State<Home> {
       setState(() {
         isBusy = true;
       });
-      var acct = await Stellar.getAccount(
-          seed: accountResponses.elementAt(0).secretSeed);
-
-      print(
-          '_MyAppState: _getAccount: 🥬 🥬 🥬 🥬  Account retrieved: ${acct.accountId}  🍎 '
-          'balance: ${acct.balances.first.balance} ${acct.balances.first.assetType} 🍎 ');
+      for (var resp in accountResponses) {
+        var acct = await Stellar.getAccount(seed: resp.secretSeed);
+        print(
+            '_MyAppState: _getAccount: 🥬 🥬 🥬 🥬  Account retrieved: ${acct.accountId}  🍎 '
+            'balance: ${getFormattedAmount(acct.balances.first.balance, context)} XLM  ');
+        widgets.add(Row(
+          children: <Widget>[
+            Text(
+              "Account retrieved. Balance: ",
+              style:
+                  TextStyle(fontWeight: FontWeight.normal, color: Colors.black),
+            ),
+            SizedBox(
+              width: 8,
+            ),
+            Text(
+              "${getFormattedAmount(acct.balances.first.balance, context)} XLM ",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.teal[700]),
+            ),
+          ],
+        ));
+      }
       setState(() {
         isBusy = false;
       });
       var snackBar = SnackBar(
-          content: Text('Account Retrieved: accountId: ${acct.accountId} '));
-      _key.currentState.showSnackBar(snackBar);
+          content: Text('${accountResponses.length} Accounts Retrieved'));
       _key.currentState.showSnackBar(snackBar);
     } on PlatformException {
       print('We have a Plugin problem');
@@ -466,7 +559,7 @@ class _HomeState extends State<Home> {
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Text(
-                            'Retrieve Account',
+                            'Retrieve Accounts',
                             style: TextStyle(color: Colors.white),
                           ),
                         ),
@@ -573,5 +666,19 @@ class _HomeState extends State<Home> {
           paymentsReceived: paymentsReceived0,
           accountResponse: accountResponses.elementAt(0),
         )));
+  }
+}
+
+String getFormattedAmount(String amount, BuildContext context) {
+  assert(amount != null);
+  Locale myLocale = Localizations.localeOf(context);
+  var val = myLocale.languageCode + '_' + myLocale.countryCode;
+  //print('getFormattedAmount ----------- locale is  $val');
+  final oCcy = new NumberFormat("#,##0.00", val);
+  try {
+    double m = double.parse(amount);
+    return oCcy.format(m);
+  } catch (e) {
+    return amount;
   }
 }

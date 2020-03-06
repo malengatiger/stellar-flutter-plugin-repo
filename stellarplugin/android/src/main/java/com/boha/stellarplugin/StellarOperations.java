@@ -152,13 +152,13 @@ class StellarOperations {
         private Network network;
         private int requestType, clearFlags, lowThreshold, highThreshold, masterKeyWeight;
         private Asset selling, buying, asset;
-        Long offerId, bumpTo;
+        private Long offerId, bumpTo;
 
-        AccountResponse accountResponse;
-        AccountResponseBag accountResponseBag;
-        List<PaymentOperationResponse> paymentOperationResponses;
-        SubmitTransactionResponse submitTransactionResponse;
-        MethodChannel.Result methodResult;
+        private AccountResponse accountResponse;
+        private AccountResponseBag accountResponseBag;
+        private List<PaymentOperationResponse> paymentOperationResponses;
+        private SubmitTransactionResponse submitTransactionResponse;
+        private MethodChannel.Result methodResult;
 
         private void setServerAndNetwork(boolean isDevelopment) {
             Log.d(TAG, "............ setServer starting ...... " +
@@ -276,8 +276,7 @@ class StellarOperations {
             this.methodResult = result;
             requestType = BUMP_SEQUENCE;
         }
-
-
+        
         @Override
         protected Object doInBackground(Void... voids) {
             Log.d(TAG, "\uD83C\uDF4E doInBackground \uD83C\uDF4E doInBackground " +
@@ -467,7 +466,7 @@ class StellarOperations {
                 throw e;
             }
 
-            Log.d(TAG, "getPaymentsReceived:  \uD83E\uDD6C found " + paymentOperationResponses.size()
+            Log.d(TAG, "getPaymentsReceived: \uD83E\uDD6C found " + paymentOperationResponses.size()
                     + " payments received by " + accountId);
             return paymentOperationResponses;
         }
