@@ -6,3 +6,12 @@
 
 ## 0.0.3
 * Added screenshots from example app
+
+## 0.0.3+1
+* Fixed broken screenshot links
+
+## 0.0.3+2
+* Fixed broken screenshot links (again!)
+
+## 0.0.3+3
+* Refactored example app

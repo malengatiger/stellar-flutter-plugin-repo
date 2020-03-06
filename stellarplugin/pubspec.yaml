@@ -1,7 +1,7 @@
 name: stellarplugin
 description: Flutter Stellar Plugin
-version: 0.0.3
-homepage: "https://aftarobot.com"
+version: 0.0.3+3
+homepage: "https://github.com/malengatiger/stellar-flutter-plugin-repo"
 
 environment:
   sdk: ">=2.1.0 <3.0.0"

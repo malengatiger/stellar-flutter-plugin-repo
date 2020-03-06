@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -17,45 +19,70 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   var _key = GlobalKey<ScaffoldState>();
   var isBusy = false;
-  var paymentsReceived0 = List<PaymentOperationResponse>();
-  var paymentsReceived1 = List<PaymentOperationResponse>();
+  var totalPaymentsReceived = List<PaymentOperationResponse>();
   var paymentsMade0 = List<PaymentOperationResponse>();
-  var paymentsMade1 = List<PaymentOperationResponse>();
   var accountResponses = List<AccountResponseBag>();
 
-  var defaultAmount = "100";
+
+  var random = Random(DateTime.now().millisecondsSinceEpoch);
+
+  String _getRandomAmount() {
+    var amt = random.nextInt(100);
+    if (amt < 10) {
+      amt = 12;
+    }
+    return amt.toString() + "." + random.nextInt(100).toString();
+  }
+
+  static const NUMBER_OF_ACCOUNTS = 3;
   Future _createAccount() async {
     print('🔆 🔆 🔆 🔆 🔆 🔆 🔆 🔆  _createAccounts starting .....');
+    setState(() {
+      isBusy = true;
+    });
     try {
-      setState(() {
-        isBusy = true;
-      });
-      var accountResponse =
-          await Stellar.createAccount(isDevelopmentStatus: true);
-      accountResponses.add(accountResponse);
-      print('_MyAppState:  🥬 🥬 🥬 🥬  _createAccounts: 🥬 🥬 🥬 🥬  '
-          'Account created by Stellar returned: 🍎 Accounts: ${accountResponses.length} 🍎');
-      setState(() {
-        isBusy = false;
-        widgets.add(Row(
-          children: <Widget>[
-            Text('Account created. Balance:'),
-            Text(
-              "${getFormattedAmount(accountResponse.accountResponse.balances.first.balance, context)} XLM ",
-              style:
-                  TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-            ),
-          ],
-        ));
-      });
-      var snackBar = SnackBar(
-        content: Text(
-          'Account has been created',
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.black,
-      );
-      _key.currentState.showSnackBar(snackBar);
+     for (var mm = 0; mm < NUMBER_OF_ACCOUNTS; mm++) {
+       var accountResponse =
+       await Stellar.createAccount(isDevelopmentStatus: true);
+       accountResponses.add(accountResponse);
+       print('_MyAppState:  🥬 🥬 🥬 🥬  _createAccounts: 🥬 🥬 🥬 🥬  '
+           'Account created by Stellar returned: 🍎 Accounts: ${accountResponses.length} 🍎');
+       widgets.add(Row(
+         children: <Widget>[
+           Text('Account created. Balance:'),
+           Text(
+             "${getFormattedAmount(accountResponse.accountResponse.balances.first.balance, context)} XLM ",
+             style:
+             TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+           ),
+         ],
+       ));
+       setState(() {
+       });
+       var snackBar = SnackBar(
+         content: Text(
+           'Account ${accountResponses.length} has been created',
+           style: TextStyle(color: Colors.white),
+         ),
+         backgroundColor: Colors.black,
+       );
+       _key.currentState.removeCurrentSnackBar();
+       _key.currentState.showSnackBar(snackBar);
+     }
+     widgets.add(SizedBox(height: 8,));
+     var snackBar = SnackBar(
+       content: Text(
+         '${accountResponses.length} accounts have been created',
+         style: TextStyle(color: Colors.white),
+       ),
+       backgroundColor: Colors.black,
+     );
+     _key.currentState.removeCurrentSnackBar();
+     _key.currentState.showSnackBar(snackBar);
+     setState(() {
+       isBusy = false;
+     });
+
     } on PlatformException catch (e) {
       print('🔴 🔴 🔴 We have a Plugin problem');
       setState(() {
@@ -83,45 +110,100 @@ class _HomeState extends State<Home> {
       _key.currentState.showSnackBar(snackBar);
       return;
     }
-    var seed = accountResponses.elementAt(0).secretSeed;
-    var amount = defaultAmount;
-    var memo = "Tx from Flutter";
-    var destinationAccount =
-        accountResponses.elementAt(1).accountResponse.accountId;
+    setState(() {
+      isBusy = true;
+    });
+    for (var acct in accountResponses) {
+      for (var i = 0; i < accountResponses.length; i++) {
+        if (acct.accountResponse.accountId !=
+            accountResponses.elementAt(i).accountResponse.accountId) {
+          try {
+            await _performSend(acct, i);
+          } catch (e) {
+            print(e);
+          }
+        }
+      }
+    }
+
+    print('\n................................... '
+        'Getting all data from transactions after payment transactions to this point: $totalPaymentsMade .... ');
+    widgets.add(SizedBox(height: 8,));
+    widgets.add(Row(
+      children: <Widget>[
+        Text(
+          "Total Payment made :",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+        ),
+        SizedBox(
+          width: 8,
+        ),
+        Text(
+          "$totalPaymentsMade",
+          style:
+          TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+        ),
+      ],
+    ));
+    widgets.add(SizedBox(height: 8,));
+    setState(() {
+      isBusy = false;
+    });
     try {
-      setState(() {
-        isBusy = true;
-      });
-      var response = await Stellar.sendPayment(
-          seed: seed,
-          destinationAccount: destinationAccount,
-          amount: amount,
-          memo: memo,
-          isDevelopmentStatus: true);
-      print(
-          '_MyAppState: _sendPayment: 🥬 🥬 🥬 🥬  Payment executed; json from object: ${response.toJson()}  🍎  🍎 ');
-      widgets.add(Text(
-        "Payment of $defaultAmount has been made. Trx: ${response.hash} ",
-        style:
-            TextStyle(fontWeight: FontWeight.normal, color: Colors.pink[600]),
-      ));
-      await _getAccount();
+      await _getAccounts();
       await _getPaymentsReceived();
       await _getPaymentsMade();
-      setState(() {
-        isBusy = false;
-      });
-      var snackBar = SnackBar(
-        content: Text(
-          'Payment has been sent',
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.indigo[700],
-      );
-      _key.currentState.showSnackBar(snackBar);
     } on PlatformException catch (e) {
       print('🔴 🔴 We have a Plugin problem: 🔴 $e');
     }
+  }
+
+  var map = Map<String, List<PaymentOperationResponse>>();
+  var totalPaymentsMade = 0;
+  Future _performSend(AccountResponseBag acct, int i) async {
+    print('\n................................... index = $i - '
+        'Sending payment made by ${acct.accountResponse.accountId} ');
+    var seed = acct.secretSeed;
+    var amount = _getRandomAmount();
+    var memo = "Tx ${i + 1} from Flutter";
+    var destinationAccount =
+        accountResponses.elementAt(i).accountResponse.accountId;
+    var response = await Stellar.sendPayment(
+        seed: seed,
+        destinationAccount: destinationAccount,
+        amount: amount,
+        memo: memo,
+        isDevelopmentStatus: true);
+    totalPaymentsMade++;
+    print(
+        '_MyAppState: _sendPayment: 🥬 🥬 🥬 🥬  Payment executed; json from object: ${response.toJson()}  🍎  🍎 ');
+    widgets.add(Row(
+      children: <Widget>[
+        Text(
+          "Payment made :",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+        ),
+        SizedBox(
+          width: 8,
+        ),
+        Text(
+          "${getFormattedAmount(amount, context)} XLM",
+          style:
+              TextStyle(fontWeight: FontWeight.bold, color: Colors.pink[600]),
+        ),
+      ],
+    ));
+    setState(() {
+
+    });
+    var snackBar = SnackBar(
+      content: Text(
+        'Payment: $amount XLM has been made',
+        style: TextStyle(color: Colors.white),
+      ),
+      backgroundColor: Colors.indigo[700],
+    );
+    _key.currentState.showSnackBar(snackBar);
   }
 
   Future _getPaymentsReceived() async {
@@ -135,66 +217,61 @@ class _HomeState extends State<Home> {
         ),
         backgroundColor: Colors.red[700],
       );
+      _key.currentState.removeCurrentSnackBar();
       _key.currentState.showSnackBar(snackBar);
       return;
     }
+    setState(() {
+      isBusy = true;
+    });
     try {
-      setState(() {
-        isBusy = true;
-      });
+      var cnt = 0;
+      totalPaymentsReceived.clear();
+      for (var acct in accountResponses) {
+        var paymnts = await Stellar.getPaymentsReceived(
+            seed: acct.secretSeed);
+        totalPaymentsReceived.addAll(paymnts);
+        print(
+            '_MyAppState: _getPaymentsReceived: 🥬 🥬 👺 Payments received, '
+                'account #${acct.accountResponse.accountId} : ${paymnts.length}  🍎 🍎 ');
+        cnt++;
+        widgets.add(Row(
+          children: <Widget>[
+            Text(
+              "Payments received for Account #$cnt",
+              style:
+              TextStyle(fontWeight: FontWeight.normal, color: Colors.black),
+            ),
+            SizedBox(
+              width: 8,
+            ),
+            Text(
+              "${paymnts.length}",
+              style:
+              TextStyle(fontWeight: FontWeight.bold, color: Colors.blue[600]),
+            ),
+          ],
+        ));
+        setState(() {
 
-      List<PaymentOperationResponse> paymentsReceived0 =
-          await Stellar.getPaymentsReceived(
-              seed: accountResponses.elementAt(0).secretSeed);
-      print(
-          '_MyAppState: _getPaymentsReceived: 🥬 🥬 🥬 🥬 👺   Payments received, account #1: ${paymentsReceived0.length}  🍎 🍎 ');
-      paymentsReceived1 = await Stellar.getPaymentsReceived(
-          seed: accountResponses.elementAt(1).secretSeed);
-      print(
-          '_MyAppState: _getPaymentsReceived: 🥬 🥬 🥬 🥬 👺  Payments received, account #2: ${paymentsReceived1.length}  🍎 🍎 ');
-      widgets.add(Row(
-        children: <Widget>[
-          Text(
-            "Payments received for Account #1 ",
-            style:
-                TextStyle(fontWeight: FontWeight.normal, color: Colors.black),
-          ),
-          SizedBox(
-            width: 8,
-          ),
-          Text(
-            "${paymentsReceived0.length}",
-            style:
-                TextStyle(fontWeight: FontWeight.bold, color: Colors.blue[600]),
-          ),
-        ],
-      ));
-      widgets.add(Row(
-        children: <Widget>[
-          Text(
-            "Payments received for Account #2 ",
-            style:
-                TextStyle(fontWeight: FontWeight.normal, color: Colors.black),
-          ),
-          SizedBox(
-            width: 8,
-          ),
-          Text(
-            "${paymentsReceived1.length}",
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-          ),
-        ],
-      ));
+        });
+        var snackBar = SnackBar(
+            content: Text('${paymnts.length} Payments received for Account #$cnt'));
+        _key.currentState.removeCurrentSnackBar();
+        _key.currentState.showSnackBar(snackBar);
+      }
+      widgets.add(SizedBox(height: 8,));
       setState(() {
         isBusy = false;
       });
       var snackBar = SnackBar(
         content: Text(
-          'Payments Received: Acct1: ${paymentsReceived0.length} Acct2: ${paymentsReceived1.length}',
+          'Payments Received for all accounts',
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.teal[700],
       );
+      _key.currentState.removeCurrentSnackBar();
       _key.currentState.showSnackBar(snackBar);
     } on PlatformException catch (e) {
       print('We have a Plugin problem: $e');
@@ -212,71 +289,68 @@ class _HomeState extends State<Home> {
         ),
         backgroundColor: Colors.red[700],
       );
+      _key.currentState.removeCurrentSnackBar();
       _key.currentState.showSnackBar(snackBar);
       return;
     }
+    setState(() {
+      isBusy = true;
+    });
     try {
-      setState(() {
-        isBusy = true;
-      });
-      paymentsMade0 = await Stellar.getPaymentsMade(
-          seed: accountResponses.first.secretSeed);
-      print(
-          '\n_MyAppState: _getPaymentsMade: 💙💙 💙💙 💙💙 💙💙   Payments made (account #1): ${paymentsMade0.length}  🍎  🍎 💙💙 💙💙 💙💙 ');
-      paymentsMade1 = await Stellar.getPaymentsMade(
-          seed: accountResponses.elementAt(1).secretSeed);
-      print(
-          '_MyAppState: _getPaymentsMade: 💙💙 💙💙 💙💙 💙💙    Payments made (account #2): ${paymentsMade1.length}  🍎  🍎 💙💙 💙💙 💙💙 ');
-      widgets.add(Row(
-        children: <Widget>[
-          Text(
-            "Payments made by Account #1 ",
-            style:
-                TextStyle(fontWeight: FontWeight.normal, color: Colors.black),
-          ),
-          SizedBox(
-            width: 8,
-          ),
-          Text(
-            "${paymentsMade0.length}",
-            style:
-                TextStyle(fontWeight: FontWeight.bold, color: Colors.blue[600]),
-          ),
-        ],
-      ));
-      widgets.add(Row(
-        children: <Widget>[
-          Text(
-            "Payments made by Account #2 ",
-            style:
-                TextStyle(fontWeight: FontWeight.normal, color: Colors.black),
-          ),
-          SizedBox(
-            width: 8,
-          ),
-          Text(
-            "${paymentsMade1.length}",
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-          ),
-        ],
-      ));
+      var cnt = 0;
+      paymentsMade0.clear();
+      for (var acct in accountResponses) {
+        var paymnts = await Stellar.getPaymentsMade(
+            seed: acct.secretSeed);
+        paymentsMade0.addAll(paymnts);
+        cnt++;
+        print(
+            '\n_MyAppState: _getPaymentsMade: 💙💙 💙💙 💙💙 💙💙   Payments made (account #$cnt): ${paymnts
+                .length}  🍎  🍎 💙💙 💙💙 💙💙 ');
+        widgets.add(Row(
+          children: <Widget>[
+            Text(
+              "Payments made by Account #$cnt ",
+              style:
+              TextStyle(fontWeight: FontWeight.normal, color: Colors.black),
+            ),
+            SizedBox(
+              width: 8,
+            ),
+            Text(
+              "${paymnts.length}",
+              style:
+              TextStyle(fontWeight: FontWeight.bold, color: Colors.pink[600]),
+            ),
+          ],
+        ));
+        setState(() {
+
+        });
+        var snackBar = SnackBar(
+            content: Text('${paymnts.length} Payments Made by Account #$cnt'));
+        _key.currentState.removeCurrentSnackBar();
+        _key.currentState.showSnackBar(snackBar);
+      }
+      widgets.add(SizedBox(height: 8,));
       setState(() {
         isBusy = false;
       });
       var snackBar = SnackBar(
         content: Text(
-          'Payments Made: Acct1: ${paymentsMade0.length} Acct2: ${paymentsMade1.length}',
+          'All Payments Made listed below',
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.pink[700],
       );
+      _key.currentState.removeCurrentSnackBar();
       _key.currentState.showSnackBar(snackBar);
     } on PlatformException catch (e) {
       print('We have a Plugin problem: $e');
     }
   }
 
-  Future _getAccount() async {
+  Future _getAccounts() async {
     print(
         '_MyAppState: _getAccount: 🥬 🥬 🥬 🥬  .... getting Account from Stellar  🍎  🍎 ');
     if (accountResponses.isEmpty) {
@@ -288,21 +362,24 @@ class _HomeState extends State<Home> {
         ),
         backgroundColor: Colors.red[700],
       );
+      _key.currentState.removeCurrentSnackBar();
       _key.currentState.showSnackBar(snackBar);
     }
     try {
       setState(() {
         isBusy = true;
       });
+      var cnt = 0;
       for (var resp in accountResponses) {
         var acct = await Stellar.getAccount(seed: resp.secretSeed);
         print(
             '_MyAppState: _getAccount: 🥬 🥬 🥬 🥬  Account retrieved: ${acct.accountId}  🍎 '
             'balance: ${getFormattedAmount(acct.balances.first.balance, context)} XLM  ');
+        cnt++;
         widgets.add(Row(
           children: <Widget>[
             Text(
-              "Account retrieved. Balance: ",
+              "Account #$cnt retrieved. Balance: ",
               style:
                   TextStyle(fontWeight: FontWeight.normal, color: Colors.black),
             ),
@@ -316,12 +393,17 @@ class _HomeState extends State<Home> {
             ),
           ],
         ));
+        _key.currentState.removeCurrentSnackBar();
+        var snackBar = SnackBar(
+            content: Text('Account Retrieved #$cnt Bal: ${getFormattedAmount(acct.balances.first.balance, context)} XLM'));
+        _key.currentState.showSnackBar(snackBar);
       }
+      widgets.add(SizedBox(height: 8,));
       setState(() {
         isBusy = false;
       });
       var snackBar = SnackBar(
-          content: Text('${accountResponses.length} Accounts Retrieved'));
+          content: Text('${accountResponses.length} Total Accounts Retrieved'));
       _key.currentState.showSnackBar(snackBar);
     } on PlatformException {
       print('We have a Plugin problem');
@@ -364,6 +446,9 @@ class _HomeState extends State<Home> {
                             color: Colors.grey[400],
                             fontWeight: FontWeight.w900),
                       ),
+                      SizedBox(
+                        width: 12,
+                      ),
                     ],
                   ),
                   SizedBox(
@@ -383,62 +468,8 @@ class _HomeState extends State<Home> {
                             color: Colors.white,
                             fontWeight: FontWeight.w900),
                       ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 8,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: <Widget>[
-                      Text('Received:'),
                       SizedBox(
-                        width: 4,
-                      ),
-                      Text(
-                        'Account 1',
-                        style: TextStyle(fontWeight: FontWeight.w900),
-                      ),
-                      SizedBox(
-                        width: 8,
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          if (accountResponses.isNotEmpty) {
-                            _startAccount1(context);
-                          }
-                        },
-                        child: Text(
-                          '${paymentsReceived0.length}',
-                          style: TextStyle(
-                              fontSize: 36,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 8,
-                      ),
-                      Text(
-                        'Account 2',
-                        style: TextStyle(fontWeight: FontWeight.w900),
-                      ),
-                      SizedBox(
-                        width: 8,
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          if (accountResponses.isNotEmpty) {
-                            _startAccount2(context);
-                          }
-                        },
-                        child: Text(
-                          '${paymentsReceived1.length}',
-                          style: TextStyle(
-                              fontSize: 36,
-                              color: Colors.black,
-                              fontWeight: FontWeight.w900),
-                        ),
+                        width: 12,
                       ),
                     ],
                   ),
@@ -448,17 +479,41 @@ class _HomeState extends State<Home> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: <Widget>[
-                      Text('Made:'),
+                      Text('Payments Received:'),
+                      SizedBox(
+                        width: 24,
+                      ),
+
+                      GestureDetector(
+                        onTap: () {
+                          if (accountResponses.isNotEmpty) {
+                            _startAccount1(context);
+                          }
+                        },
+                        child: Text(
+                          '${totalPaymentsReceived.length}',
+                          style: TextStyle(
+                              fontSize: 36,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w900),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 100,
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: <Widget>[
+                      Text('Payments Made:'),
                       SizedBox(
                         width: 12,
                       ),
-                      Text(
-                        'Account 1',
-                        style: TextStyle(fontWeight: FontWeight.w900),
-                      ),
-                      SizedBox(
-                        width: 8,
-                      ),
+
                       GestureDetector(
                         onTap: () {
                           _startAccount1(context);
@@ -472,26 +527,7 @@ class _HomeState extends State<Home> {
                         ),
                       ),
                       SizedBox(
-                        width: 8,
-                      ),
-                      Text(
-                        'Account 2',
-                        style: TextStyle(fontWeight: FontWeight.w900),
-                      ),
-                      SizedBox(
-                        width: 8,
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          _startAccount2(context);
-                        },
-                        child: Text(
-                          '${paymentsMade1.length}',
-                          style: TextStyle(
-                              fontSize: 36,
-                              color: Colors.black,
-                              fontWeight: FontWeight.w900),
-                        ),
+                        width: 100,
                       ),
                     ],
                   ),
@@ -506,7 +542,7 @@ class _HomeState extends State<Home> {
                     height: 12,
                   ),
                   Text(
-                    'Payments are $defaultAmount XLM at a time',
+                    'Payments are random < 100 XLM per payment',
                     style: TextStyle(color: Colors.black),
                   ),
                   SizedBox(
@@ -515,7 +551,7 @@ class _HomeState extends State<Home> {
                 ],
               ),
             ),
-            preferredSize: Size.fromHeight(300)),
+            preferredSize: Size.fromHeight(340)),
       ),
       backgroundColor: Colors.brown[100],
       body: isBusy
@@ -555,7 +591,7 @@ class _HomeState extends State<Home> {
                       child: RaisedButton(
                         elevation: 4,
                         color: Colors.teal[500],
-                        onPressed: _getAccount,
+                        onPressed: _getAccounts,
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Text(
@@ -642,19 +678,6 @@ class _HomeState extends State<Home> {
     );
   }
 
-  void _startAccount2(BuildContext context) {
-    print('startAccount2 ...............');
-    Navigator.push(
-        context,
-        SlideRightRoute(
-            widget: AccountDetails(
-          accountResponse: accountResponses.elementAt(1),
-          paymentsMade: paymentsMade1,
-          accountName: "Account #2",
-          paymentsReceived: paymentsReceived1,
-        )));
-  }
-
   void _startAccount1(BuildContext context) {
     print('startAccount1 ...............');
     Navigator.push(
@@ -663,7 +686,7 @@ class _HomeState extends State<Home> {
             widget: AccountDetails(
           accountName: "Account #1",
           paymentsMade: paymentsMade0,
-          paymentsReceived: paymentsReceived0,
+          paymentsReceived: totalPaymentsReceived,
           accountResponse: accountResponses.elementAt(0),
         )));
   }
