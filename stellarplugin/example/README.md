@@ -53,6 +53,9 @@ if isDevelopmentStatus is true FriendBot is politely asked for 10,000 test XLM (
 ## Open Source Code
 Code for the plugin and the example app can be found here: https://github.com/malengatiger/stellar-flutter-plugin-repo
 
+## Flutter
+More information about Flutter can be found here: https://flutter.dev/ 
+
 ## Screenshots from the example Flutter app
 This app is merely designed to exercise all the Stellar transaction operations available in the official SDK's. To get going, start by creating at least 2 accounts. Just tap around the UI provided and the app will make the appropriate calls to the Stellar Testnet. Scroll to the bottom of the screen to see logs of the actions taken during your use of the example app.
 ![Alt text](/stellarplugin/example/screenshots/device-2020-03-06-130303.png?raw=true "Main Page of Example Flutter app")
