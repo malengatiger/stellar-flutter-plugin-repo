@@ -58,10 +58,11 @@ More information about Flutter can be found here: https://flutter.dev/
 ## Screenshots from the example Flutter app
 This app is merely designed to exercise all the Stellar transaction operations available in the official SDK's. To get going, start by creating at least 2 accounts. Just tap around the UI provided and the app will make the appropriate calls to the Stellar Testnet. Scroll to the bottom of the screen to see logs of the actions taken during your use of the example app.
 
-![Alt text](/stellarplugin/example/screenshots/device-2020-03-06-130303.png?raw=true "Main Page of Example Flutter app")
-
-![Alt text](/stellarplugin/example/screenshots/device-2020-03-06-130425.png?raw=true "Main Page Scrolled to bottom")
-
-![Alt text](/stellarplugin/example/screenshots/device-2020-03-06-131125.png?raw=true "Account Page of Example Flutter app")
+# Screenshot 1
+![Alt text](https://firebasestorage.googleapis.com/v0/b/dancer26983.appspot.com/o/screenshots%2Fdevice-2020-03-06-130303.png?alt=media&token=99b7b09e-7e1f-4c95-a360-40ff3ed45d96?raw=true "Main Page of Example Flutter app")
+# Screenshot 2
+![Alt text](https://firebasestorage.googleapis.com/v0/b/dancer26983.appspot.com/o/screenshots%2Fdevice-2020-03-06-130425.png?alt=media&token=6a9e8c17-e3e3-4cff-a558-3884cfb33065?raw=true "Main Page Scrolled to bottom")
+# Screenshot 3
+![Alt text](https://firebasestorage.googleapis.com/v0/b/dancer26983.appspot.com/o/screenshots%2Fdevice-2020-03-06-131125.png?alt=media&token=5350300a-ce15-4d57-a645-3a4d5d9aeaed?raw=true "Account Page of Example Flutter app")
 
 
