@@ -53,3 +53,8 @@ if isDevelopmentStatus is true FriendBot is politely asked for 10,000 test XLM (
 ## Open Source Code
 Code for the plugin and the example app can be found here: https://github.com/malengatiger/stellar-flutter-plugin-repo
 
+## Screenshots from the example Flutter app
+
+![Alt text](/stellarplugin/example/screenshots/device-2020-03-06-130303.png?raw=true "Main Page of Example Flutter app")
+![Alt text](/stellarplugin/example/screenshots/device-2020-03-06-130425.png?raw=true "Main Page of Example Flutter app")
+![Alt text](/stellarplugin/example/screenshots/device-2020-03-06-131125.png?raw=true "Main Page of Example Flutter app")
