@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:stellarplugin/data_models/account_response_bag.dart';
 import 'package:stellarplugin/data_models/payment_response.dart';
 import 'package:stellarplugin/stellarplugin.dart';
+import 'package:stellarplugin_example/home.dart';
 
 class AccountDetails extends StatefulWidget {
   final List<PaymentOperationResponse> paymentsReceived;
@@ -118,10 +119,10 @@ class _AccountDetailsState extends State<AccountDetails> {
                                   width: 12,
                                 ),
                                 Text(
-                                  widget
+                                  getFormattedAmount(widget
                                       .accountResponse.accountResponse.balances
                                       .elementAt(0)
-                                      .balance,
+                                      .balance, context),
                                   style: TextStyle(
                                       color: Colors.black,
                                       fontWeight: FontWeight.w900,
