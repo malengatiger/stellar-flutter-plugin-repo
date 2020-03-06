@@ -32,7 +32,8 @@ List<PaymentOperationResponse> paymentsMade = await Stellar.getPaymentsMade(
  AccountResponse acct = await Stellar.getAccount(
           seed: "secretSeed here");
 ~~~~
-isDevelopmentStatus is a boolean flag to help the plugin connect to either the Testnet and the public Stellar network. This code creates a Stellar account and , if isDevelopmentStatus is true FriendBot is politely asked for 10,000 test XLM (lumens).
+isDevelopmentStatus is a boolean flag to help the plugin connect to either the Testnet and the public Stellar network. This code creates Stellar accounts and , 
+if isDevelopmentStatus is true FriendBot is politely asked for 10,000 test XLM (lumens). Please take a look at the code that exercises most of the Stellar transaction operations listed below. The example code lives at https://github.com/malengatiger/stellar-flutter-plugin-repo/tree/master/stellarplugin/example 
 
 ## Stellar Transaction Operations supported:
 
@@ -49,4 +50,6 @@ isDevelopmentStatus is a boolean flag to help the plugin connect to either the T
 - BumpSequence
 - ManageData
 
-* Code for the plugin and the example app can be found here: https://github.com/malengatiger/stellar-flutter-plugin-repo
+## Open Source Code
+Code for the plugin and the example app can be found here: https://github.com/malengatiger/stellar-flutter-plugin-repo
+
