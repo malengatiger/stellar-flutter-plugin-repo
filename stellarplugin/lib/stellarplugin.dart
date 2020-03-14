@@ -24,10 +24,7 @@ class Stellar {
     var mJson = json.decode(accountResponse);
     var result = AccountResponseBag.fromJson(mJson);
     print(
-        'Stellar, the plugin connector: 🔵 🔵 🔵 createAccount did the biz;: accountId: ' +
-            result.accountResponse.accountId +
-            " seed: " +
-            result.secretSeed);
+        '🔵 🔵 🔵 🔵 🔵 🔵 Stellar, the plugin, 🔵 🔵 🔵 🔵 🔵 🔵  .. createAccount did the bizniz! 🔆 🔆 🔆 ');
     return result;
   }
 
@@ -47,16 +44,6 @@ class Stellar {
     print('Stellar, Mz Connector, returned:  🔵 🔵 🔵 paymentResponse: ' +
         paymentResponse);
     var mJson = jsonDecode(paymentResponse);
-    try {
-      if (mJson["extras"]["resultCodes"]["transactionResultCode"] ==
-          "tx_bad_seq") {
-        print(
-            '🔴 🔴 Bad moon rising ... 🔴 bad sequence number 🔴 🔴 🔴 🔴 🔴 throwing a hissy fit! (aka PlatformException)...');
-        throw PlatformException(code: "Payment failed. 🔴 Bad sequence number");
-      }
-    } catch (e) {
-      print(e);
-    }
     return SubmitTransactionResponse.fromJson(mJson);
   }
 
@@ -104,7 +91,8 @@ class Stellar {
       "seed": '$seed',
     });
     var resp = AccountResponse.fromJson(jsonDecode(pString));
-    print('Stellar:  🔵 🔵 🔵 getAccount: ${resp.accountId}');
+    print(
+        'Stellar on the Flutter side, receiving account:  🔵 🔵 🔵 ${resp.accountId}');
     return resp;
   }
 }

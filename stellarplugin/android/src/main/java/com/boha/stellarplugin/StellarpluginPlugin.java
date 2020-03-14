@@ -90,20 +90,13 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     private boolean isDevelopment;
-    private StellarOperations operations = new StellarOperations();
+    private StellarOps ops = new StellarOps();
     private Result result;
     private MethodCall call;
 
     @Override
     public void onMethodCall(MethodCall call, @NotNull Result result) {
-        LOGGER.info("\uD83D\uDD35 .... \uD83D\uDC99 \uD83D\uDC99  " +
-                "onMethodCall started inside plugin... \uD83D\uDC99 \uD83D\uDC99 ");
-        String msg = context == null ? "NO CONTEXT here" : "WE have a fucking CONTEXT!!";
-        LOGGER.warning("Do we have a handle to context? ".concat(msg));
-        if (context != null) {
-            SharedPreferences prefs = context.getSharedPreferences("s", 0);
 
-        }
         this.result = result;
         this.call = call;
         String callMethod = call.method;
@@ -165,9 +158,8 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
     private static final String TAG = StellarpluginPlugin.class.getSimpleName();
 
     private void createAccount() {
-        Log.d(TAG, "\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08 createAccount ...");
         try {
-            operations.createAccount(isDevelopment, result);
+            ops.createAccount(isDevelopment, result);
         } catch (Exception e) {
             Log.e(TAG, "\uD83D\uDD34 \uD83D\uDD34 \uD83D\uDD34 \uD83D\uDD34" +
                     "  Create account all fucked!", e);
@@ -176,8 +168,14 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
         }
     }
 
+    private void getAccount() {
+        String seed = call.argument("seed");
+        ops.getAccount(seed, isDevelopment, result);
+
+    }
+
+
     private boolean getDevelopmentFlag(MethodCall call) {
-        Log.d(TAG, "\uD83D\uDD35 arguments in getDevelopmentFlag: " + call.arguments + " \uD83D\uDD35");
 
         Object param = call.argument("isDevelopmentStatus");
         if (param == null) {
@@ -186,10 +184,6 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
         }
         String isDev = (String) param;
         isDevelopment = isDev != null && isDev.equalsIgnoreCase("true");
-
-        LOGGER.info("\uD83D\uDD35 getDevelopmentFlag : ....\uD83D\uDD35 " +
-                "...... returning isDevelopment: "
-                + isDevelopment + " \uD83D\uDD35");
         return isDevelopment;
     }
 
@@ -200,7 +194,7 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
         String amount = call.argument("amount");
         String price = call.argument("price");
         Long offerId = call.argument("offerId");
-        operations.manageBuyOffer(seed, sellJson, buyingJson, amount, price, offerId, result, isDevelopment);
+        ops.manageBuyOffer(seed, sellJson, buyingJson, amount, price, offerId, result, isDevelopment);
 
     }
 
@@ -211,7 +205,7 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
         String amount = call.argument("amount");
         String price = call.argument("price");
         Long offerId = call.argument("offerId");
-        operations.manageSellOffer(seed, sellJson, buyingJson, amount, price, offerId, result, isDevelopment);
+        ops.manageSellOffer(seed, sellJson, buyingJson, amount, price, offerId, result, isDevelopment);
 
     }
 
@@ -221,7 +215,7 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
         String buyingJson = call.argument("buying");
         String amount = call.argument("amount");
         String price = call.argument("price");
-        operations.createPassiveOffer(seed, sellJson, buyingJson, amount, price, result, isDevelopment);
+        ops.createPassiveOffer(seed, sellJson, buyingJson, amount, price, result, isDevelopment);
 
     }
     private void manageData() {
@@ -229,7 +223,7 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
         String name = call.argument("name");
         String value = call.argument("value");
 
-        operations.manageData(seed,name,value,result,isDevelopment);
+        ops.manageData(seed,name,value,result,isDevelopment);
 
     }
 
@@ -238,7 +232,7 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
         String trustor = call.argument("trustor");
         String assetCode = call.argument("assetCode");
         boolean auth = call.argument("authorized");
-        operations.allowTrust(seed, trustor, assetCode, auth, result, isDevelopment);
+        ops.allowTrust(seed, trustor, assetCode, auth, result, isDevelopment);
     }
 
     private void changeTrust() {
@@ -246,19 +240,19 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
         String assetJson = call.argument("asset");
         String limit = call.argument("limit");
         boolean auth = call.argument("authorized");
-        operations.changeTrust(seed, assetJson, limit, result, isDevelopment);
+        ops.changeTrust(seed, assetJson, limit, result, isDevelopment);
     }
 
     private void mergeAccounts() {
         String seed = call.argument("seed");
         String destinationAccount = call.argument("destinationAccount");
-        operations.mergeAccounts(seed, destinationAccount, result, isDevelopment);
+        ops.mergeAccounts(seed, destinationAccount, result, isDevelopment);
     }
 
     private void bumpSequence() {
         String seed = call.argument("seed");
         Long bumpTo = call.argument("bumpTo");
-        operations.bumpSequence(seed, bumpTo, result, isDevelopment);
+        ops.bumpSequence(seed, bumpTo, result, isDevelopment);
     }
 
     private void setOptions() {
@@ -269,26 +263,21 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
         int masterKeyWeight = call.argument("masterKeyWeight");
         String inflationDestination = call.argument("inflationDestination");
 
-        operations.setOptions(seed, clearFlags, highThreshold, lowThreshold,
+        ops.setOptions(seed, clearFlags, highThreshold, lowThreshold,
                 inflationDestination, masterKeyWeight, result, isDevelopment);
 
     }
 
-    private void getAccount() {
-        String seed = call.argument("seed");
-        operations.getAccount(seed, isDevelopment, result);
-
-    }
 
     private void getPaymentsReceived() {
         String seed = call.argument("seed");
-        operations.getPaymentsReceived(seed, isDevelopment, result);
+        ops.getPaymentsReceived(seed, isDevelopment, result);
 
     }
 
     private void getPaymentsMade() {
         String seed = call.argument("seed");
-        operations.getPaymentsMade(seed, isDevelopment, result);
+        ops.getPaymentsMade(seed, isDevelopment, result);
 
     }
 
@@ -297,7 +286,7 @@ public class StellarpluginPlugin implements FlutterPlugin, MethodCallHandler {
         String destAccount = call.argument("destinationAccount");
         String amount = call.argument("amount");
         String memo = call.argument("memo");
-        operations.sendPayment(seed, destAccount, amount, memo, isDevelopment, result);
+        ops.sendPayment(seed, destAccount, amount, memo, isDevelopment, result);
 
     }
 

@@ -15,3 +15,15 @@
 
 ## 0.0.3+3
 * Refactored example app
+
+## 0.0.3+4
+* Removed extra logging
+
+## 0.0.3+5
+* Removed asyncTask references
+
+## 0.0.3+6
+* Refactored payment response handling
+
+## 0.0.3+7
+* Refactored payment logging
