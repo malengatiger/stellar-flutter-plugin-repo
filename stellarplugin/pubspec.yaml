@@ -1,6 +1,6 @@
 name: stellarplugin
 description: Flutter Stellar Plugin
-version: 0.0.3+10
+version: 0.0.3+12
 homepage: "https://github.com/malengatiger/stellar-flutter-plugin-repo"
 
 environment:

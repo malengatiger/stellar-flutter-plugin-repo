@@ -30,7 +30,15 @@
 
 ## 0.0.3+8
 * Refactored account response model
+
 ## 0.0.3+9
 * Removed account response definition
+
 ## 0.0.3+10
 * Refactored Stellar connection code
+
+## 0.0.3+11
+* Removed unnecessary account response fields
+
+## 0.0.3+12
+* Removed more account response fields

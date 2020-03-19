@@ -372,6 +372,7 @@ class _HomeState extends State<Home> {
         print(
             '_MyAppState: _getAccount: 🥬 🥬 🥬 🥬  Account retrieved: ${acct.accountId}  🍎 '
             'balance: ${getFormattedAmount(acct.balances.first.balance, context)} XLM  ');
+        print(resp.toJson());
         cnt++;
         widgets.add(Row(
           children: <Widget>[

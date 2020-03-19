@@ -6,57 +6,55 @@ class AccountResponse {
   Links links;
   int sequenceNumber;
   List<Signers> signers;
-  int subentryCount;
+//  int subentryCount;
   Thresholds thresholds;
-  int rateLimitLimit;
-  int rateLimitRemaining;
-  int rateLimitReset;
+//  int rateLimitLimit;
+//  int rateLimitRemaining;
+//  int rateLimitReset;
 
-  AccountResponse(
-      {this.accountId,
-      this.balances,
-      this.flags,
-      this.lastModifiedLedger,
-      this.links,
-      this.sequenceNumber,
-      this.signers,
-      this.subentryCount,
-      this.thresholds,
-      this.rateLimitLimit,
-      this.rateLimitRemaining,
-      this.rateLimitReset});
+  AccountResponse({
+    this.accountId,
+    this.balances,
+    this.flags,
+    this.lastModifiedLedger,
+    this.links,
+    this.sequenceNumber,
+    this.signers,
+    this.thresholds,
+  });
 
   AccountResponse.fromJson(Map<String, dynamic> json) {
     accountId = json['accountId'];
     try {
       if (json['balances'] != null) {
-        balances = new List();
+        balances = List();
         json['balances'].forEach((v) {
           balances.add(Balances.fromJson(v));
         });
       }
 
-      flags = json['flags'] != null ? new Flags.fromJson(json['flags']) : null;
-      lastModifiedLedger = json['lastModifiedLedger'];
-      links = json['links'] != null ? new Links.fromJson(json['links']) : null;
-      sequenceNumber = json['sequenceNumber'];
+//      flags = json['flags'] != null ?  Flags.fromJson(json['flags']) : null;
+//      lastModifiedLedger = json['lastModifiedLedger'];
+//      sequenceNumber = json['sequenceNumber'];
+      links = json['links'] != null ? Links.fromJson(json['links']) : null;
+
       if (json['signers'] != null) {
-        signers = new List<Signers>();
+        signers = List<Signers>();
         json['signers'].forEach((v) {
-          signers.add(new Signers.fromJson(v));
+          signers.add(Signers.fromJson(v));
         });
       }
-      subentryCount = json['subentryCount'];
+//      subentryCount = json['subentryCount'];
       thresholds = json['thresholds'] != null
-          ? new Thresholds.fromJson(json['thresholds'])
+          ? Thresholds.fromJson(json['thresholds'])
           : null;
-      rateLimitLimit = json['rateLimitLimit'];
-      rateLimitRemaining = json['rateLimitRemaining'];
-      rateLimitReset = json['rateLimitReset'];
+//      rateLimitLimit = json['rateLimitLimit'];
+//      rateLimitRemaining = json['rateLimitRemaining'];
+//      rateLimitReset = json['rateLimitReset'];
     } catch (e) {
       print(
-          'AccountResponse:fromJson: 🔴 ......... the fuckup is here somewhere ....');
-      throw Exception('AccountResponse: 🔴 Fuckup 🔴 $e 🔴');
+          'AccountResponse:fromJson: 🔴 ......... the fuckup is UP here somewhere !!! ....');
+      throw Exception('AccountResponse: 🔴 Fuckup!!! 🔴 $e 🔴');
     }
   }
 
@@ -67,30 +65,30 @@ class AccountResponse {
       if (this.balances != null) {
         data['balances'] = this.balances.map((v) => v.toJson()).toList();
       }
-      if (this.flags != null) {
-        data['flags'] = this.flags.toJson();
-      }
-      data['lastModifiedLedger'] = this.lastModifiedLedger;
-      if (this.links != null) {
-        data['links'] = this.links.toJson();
-      }
-      data['sequenceNumber'] = this.sequenceNumber;
+//      if (this.flags != null) {
+//        data['flags'] = this.flags.toJson();
+//      }
+//      data['lastModifiedLedger'] = this.lastModifiedLedger;
+//      if (this.links != null) {
+//        data['links'] = this.links.toJson();
+//      }
+//      data['sequenceNumber'] = this.sequenceNumber;
       if (this.signers != null) {
         data['signers'] = this.signers.map((v) => v.toJson()).toList();
       }
-      data['subentryCount'] = this.subentryCount;
+//      data['subentryCount'] = this.subentryCount;
       if (this.thresholds != null) {
         data['thresholds'] = this.thresholds.toJson();
       }
-      data['rateLimitLimit'] = this.rateLimitLimit;
-      data['rateLimitRemaining'] = this.rateLimitRemaining;
-      data['rateLimitReset'] = this.rateLimitReset;
+//      data['rateLimitLimit'] = this.rateLimitLimit;
+//      data['rateLimitRemaining'] = this.rateLimitRemaining;
+//      data['rateLimitReset'] = this.rateLimitReset;
       return data;
     } catch (e) {
       print(e);
       print(
-          '🔴 AccountResponse.toJson: ......... the fuckup is here somewhere .... 🔴 ');
-      throw Exception('🔴 🔴 🔴 🔴 🔴 🔴 Fuckup $e 🔴 ');
+          '🔴 AccountResponse.toJson: ......... the fuckup is up here somewhere!!! .... 🔴 ');
+      throw Exception('🔴 🔴 🔴 🔴 🔴 🔴 Fuckup!!! $e 🔴 ');
     }
   }
 }
@@ -115,7 +113,7 @@ class Balances {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = Map<String, dynamic>();
     data['assetType'] = this.assetType;
     data['balance'] = this.balance;
     data['buyingLiabilities'] = this.buyingLiabilities;
@@ -138,7 +136,7 @@ class Flags {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = Map<String, dynamic>();
     data['authImmutable'] = this.authImmutable;
     data['authRequired'] = this.authRequired;
     data['authRevocable'] = this.authRevocable;
@@ -162,20 +160,19 @@ class Links {
 
   Links.fromJson(Map<String, dynamic> json) {
     effects =
-        json['effects'] != null ? new Effects.fromJson(json['effects']) : null;
-    offers =
-        json['offers'] != null ? new Effects.fromJson(json['offers']) : null;
+        json['effects'] != null ? Effects.fromJson(json['effects']) : null;
+    offers = json['offers'] != null ? Effects.fromJson(json['offers']) : null;
     operations = json['operations'] != null
-        ? new Effects.fromJson(json['operations'])
+        ? Effects.fromJson(json['operations'])
         : null;
-    self = json['self'] != null ? new Effects.fromJson(json['self']) : null;
+    self = json['self'] != null ? Effects.fromJson(json['self']) : null;
     transactions = json['transactions'] != null
-        ? new Effects.fromJson(json['transactions'])
+        ? Effects.fromJson(json['transactions'])
         : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = Map<String, dynamic>();
     if (this.effects != null) {
       data['effects'] = this.effects.toJson();
     }
@@ -207,7 +204,7 @@ class Effects {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = Map<String, dynamic>();
     data['href'] = this.href;
     data['templated'] = this.templated;
     return data;
@@ -228,7 +225,7 @@ class Signers {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = Map<String, dynamic>();
     data['key'] = this.key;
     data['type'] = this.type;
     data['weight'] = this.weight;
@@ -250,7 +247,7 @@ class Thresholds {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = Map<String, dynamic>();
     data['highThreshold'] = this.highThreshold;
     data['lowThreshold'] = this.lowThreshold;
     data['medThreshold'] = this.medThreshold;
