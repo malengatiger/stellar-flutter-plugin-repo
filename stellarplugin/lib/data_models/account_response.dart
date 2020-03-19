@@ -28,56 +28,70 @@ class AccountResponse {
 
   AccountResponse.fromJson(Map<String, dynamic> json) {
     accountId = json['accountId'];
-    if (json['balances'] != null) {
-      balances = new List<Balances>();
-      json['balances'].forEach((v) {
-        balances.add(new Balances.fromJson(v));
-      });
+    try {
+      if (json['balances'] != null) {
+        balances = new List();
+        json['balances'].forEach((v) {
+          balances.add(Balances.fromJson(v));
+        });
+      }
+
+      flags = json['flags'] != null ? new Flags.fromJson(json['flags']) : null;
+      lastModifiedLedger = json['lastModifiedLedger'];
+      links = json['links'] != null ? new Links.fromJson(json['links']) : null;
+      sequenceNumber = json['sequenceNumber'];
+      if (json['signers'] != null) {
+        signers = new List<Signers>();
+        json['signers'].forEach((v) {
+          signers.add(new Signers.fromJson(v));
+        });
+      }
+      subentryCount = json['subentryCount'];
+      thresholds = json['thresholds'] != null
+          ? new Thresholds.fromJson(json['thresholds'])
+          : null;
+      rateLimitLimit = json['rateLimitLimit'];
+      rateLimitRemaining = json['rateLimitRemaining'];
+      rateLimitReset = json['rateLimitReset'];
+    } catch (e) {
+      print(
+          'AccountResponse:fromJson: 🔴 ......... the fuckup is here somewhere ....');
+      throw Exception('AccountResponse: 🔴 Fuckup 🔴 $e 🔴');
     }
-    flags = json['flags'] != null ? new Flags.fromJson(json['flags']) : null;
-    lastModifiedLedger = json['lastModifiedLedger'];
-    links = json['links'] != null ? new Links.fromJson(json['links']) : null;
-    sequenceNumber = json['sequenceNumber'];
-    if (json['signers'] != null) {
-      signers = new List<Signers>();
-      json['signers'].forEach((v) {
-        signers.add(new Signers.fromJson(v));
-      });
-    }
-    subentryCount = json['subentryCount'];
-    thresholds = json['thresholds'] != null
-        ? new Thresholds.fromJson(json['thresholds'])
-        : null;
-    rateLimitLimit = json['rateLimitLimit'];
-    rateLimitRemaining = json['rateLimitRemaining'];
-    rateLimitReset = json['rateLimitReset'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['accountId'] = this.accountId;
-    if (this.balances != null) {
-      data['balances'] = this.balances.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = Map<String, dynamic>();
+    try {
+      data['accountId'] = this.accountId;
+      if (this.balances != null) {
+        data['balances'] = this.balances.map((v) => v.toJson()).toList();
+      }
+      if (this.flags != null) {
+        data['flags'] = this.flags.toJson();
+      }
+      data['lastModifiedLedger'] = this.lastModifiedLedger;
+      if (this.links != null) {
+        data['links'] = this.links.toJson();
+      }
+      data['sequenceNumber'] = this.sequenceNumber;
+      if (this.signers != null) {
+        data['signers'] = this.signers.map((v) => v.toJson()).toList();
+      }
+      data['subentryCount'] = this.subentryCount;
+      if (this.thresholds != null) {
+        data['thresholds'] = this.thresholds.toJson();
+      }
+      data['rateLimitLimit'] = this.rateLimitLimit;
+      data['rateLimitRemaining'] = this.rateLimitRemaining;
+      data['rateLimitReset'] = this.rateLimitReset;
+      return data;
+    } catch (e) {
+      print(e);
+      print(
+          '🔴 AccountResponse.toJson: ......... the fuckup is here somewhere .... 🔴 ');
+      throw Exception('🔴 🔴 🔴 🔴 🔴 🔴 Fuckup $e 🔴 ');
     }
-    if (this.flags != null) {
-      data['flags'] = this.flags.toJson();
-    }
-    data['lastModifiedLedger'] = this.lastModifiedLedger;
-    if (this.links != null) {
-      data['links'] = this.links.toJson();
-    }
-    data['sequenceNumber'] = this.sequenceNumber;
-    if (this.signers != null) {
-      data['signers'] = this.signers.map((v) => v.toJson()).toList();
-    }
-    data['subentryCount'] = this.subentryCount;
-    if (this.thresholds != null) {
-      data['thresholds'] = this.thresholds.toJson();
-    }
-    data['rateLimitLimit'] = this.rateLimitLimit;
-    data['rateLimitRemaining'] = this.rateLimitRemaining;
-    data['rateLimitReset'] = this.rateLimitReset;
-    return data;
   }
 }
 
@@ -243,6 +257,13 @@ class Thresholds {
     return data;
   }
 }
+//PublicKeyCredential : GCFGP35BZLFOWAZYUA275S7A5DFVUDIO5DZPWBIRXKHQMKRP2E3ZMBS7
+//secret : SASDXSNOHO5CRZPNUEQMPJSRNF6DGLEPKXP2CCRNRNPUISJM2F3DEZND
+
+//PublicKeyCredential : GBNUALXEBAGP6NINA4WD24LSPZMQMDVUBL7IJLBDHWHQD5HGLPETNQ4Q
+//secret : SC63NHQJOPJ56VJN5P6M4P3PZ23QOA67OT7HNIIYZRJ4F7XD4VRGXYPB
+//Johnny Muller 078 786 9796
+
 //PublicKeyCredential : GCFGP35BZLFOWAZYUA275S7A5DFVUDIO5DZPWBIRXKHQMKRP2E3ZMBS7
 //secret : SASDXSNOHO5CRZPNUEQMPJSRNF6DGLEPKXP2CCRNRNPUISJM2F3DEZND
 

@@ -2,19 +2,29 @@ Please copy this template below and replace the text after the colons with your 
 
 Image header: 1200x630 image preview of your project or project brand (keep margins in mind).
 
-Project title: The name of your project. Please adhere to the Stellar brand policy.
+Project title: The Stokkie Network, a platform for Community Wallets and Financial Collaboration.
 
-Summary: A simple sentence summary of your project.
+Summary: The Stokkie Network is a cloud based platform that enables groups of people to collaborate on anything that involves jointly purchasing or saving for something. In South Africa's black communities, groups of friends form a Stokvel which is a handshake agreement to help each other save for some significant item or an important event. The Stokkie Network was inspired by this concept and the implementation was both inspired and enabled by Stellar. The platform consists of a backend based currently on Firebase that manages the data around the network participants and supports a set of mobile apps (Android implemented with iOS to follow). Each participant of the Stokkie Network acquires a Stellar account and each Stokvel (community based organization) similarly has a Stellar account. The group's collaborate around transactions that involve paying into the group's Stokvel account and subsequently spending the balance of the group account on some agreed item or event  🎲
 
-Category: Choose one the three categories (Applications, tools, infrastructure | Resources & Content | Events & Programs)
+
+Category: Applications, tools, infrastructure
 
 Goals: What your project plans to accomplish broken down by objectives.
 
 Timeline: How and when you will accomplish your goals.
 
-Description: The description should answer questions like “what does your project enable users to do?” “Why is your project valuable for Stellar?” and “Wow does your project use Stellar?” It should also cover what platforms the project supports (ex; Windows, Chrome, etc.) and relevant documentation. This section should be very detailed.
-GitHub repository: https://github.com/malengatiger/stellar-flutter-plugin-repo/tree/master/stellarplugin
-Flutter: https://flutter.dev/
-Links: Links to your application, code repository, supporting materials, and/or home site. If you are submitting a proposal for content pieces (like walkthroughs), please provide links to the content pieces.
+Description: The description should answer questions like “what does your project enable users to do?” “Why is your project valuable for Stellar?”
+and “Wow does your project use Stellar?” It should also cover what platforms the project supports (ex; Windows, Chrome, etc.) and relevant documentation.
+This section should be very detailed.
 
-Tags: Tag your project. Examples can be “sdk, javascript, party, game, book”
+
+
+Links:
+GitHub repository for the Flutter/Stellar plugin: https://github.com/malengatiger/stellar-flutter-plugin-repo/tree/master/stellarplugin
+GitHub repository for the Stokkie Network application: https://github.com/malengatiger/stellar-stokvel-repo
+My personal GitHub: https://github.com/malengatiger
+Information on Flutter: https://flutter.dev/
+Flutter Showcase: https://flutter.dev/showcase
+
+
+Tags: “plugin, flutter, community, platform, wallet, collaboration, financial inclusion, java, dart, sdk, crowdfunding, loans, group wallet”
